@@ -1,0 +1,1 @@
+#toda la parte grafica de tkinter se puede implementar en esta clase
