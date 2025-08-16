@@ -1,5 +1,4 @@
-import csv
-import uuid
+
 from datetime import datetime, timedelta, timezone
 class Tiempo:
     def __init__(self,fecha=None):
