@@ -6,7 +6,8 @@ label=tk.Label(inicio,text="Hola bienvenido",font=("Arial",15))
 label.pack(pady=20)
 
 def saludo():
-    label.config(text="Que quiere comprar")
+    label.config(text=" Menu Principal ")
+
 
 boton=tk.Button(inicio,text="Entrar",command=saludo)
 boton.pack(pady=10)    

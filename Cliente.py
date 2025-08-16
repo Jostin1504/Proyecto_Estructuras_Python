@@ -2,6 +2,7 @@ import csv
 import uuid #Sirve para crear un ID unico, podriamos usarlo como que cada cliente tenga uno, al igual que en la comprar y transacciones.
 from datetime import datetime,timedelta, timezone #timezone nos sirve por si en alguna ocasion llegan a realizar comprar internacionales.
 from Fechas import Tiempo
+from Tarjetas import Tarjeta 
 class Cliente:
     def __init__(self, nombre, apellido, telefono, correo, direccion_envio,id_Cliente,fecha_registro):
         self.nombre = nombre
@@ -12,6 +13,8 @@ class Cliente:
         self.id_Cliente=id_Cliente
         self.fecha_registro=fecha_registro
         self.Historial_compras=[] #Puede ser para ver el carrito de compras
+        self.tarjetas_compra=[] #lista de tarjetas registradas
+
     def info_cliente(self):
         print(f"Cliente: {self.nombre}({self.id_Cliente})")
         print(f"Apellido{self.apellido}")
@@ -52,3 +55,4 @@ class Cliente:
 
 #en primera instancia con los clientes se usaria la cola
 #el primero que se hace siempre queda de primero en el proceso de pago
+
