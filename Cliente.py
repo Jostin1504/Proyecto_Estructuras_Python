@@ -2,7 +2,7 @@ import csv
 import uuid #Sirve para crear un ID unico, podriamos usarlo como que cada cliente tenga uno, al igual que en la comprar y transacciones.
 from datetime import datetime,timedelta, timezone #timezone nos sirve por si en alguna ocasion llegan a realizar comprar internacionales.
 from Fechas import Tiempo
-from Tarjetas import Tarjeta 
+from Tarjetas import TarjetaDeCompra
 class Cliente:
     def __init__(self, nombre, apellido, telefono, correo, direccion_envio,id_Cliente,fecha_registro):
         self.nombre = nombre
@@ -34,6 +34,24 @@ class Cliente:
         }    
     def fecha_de_registro(self):
         self.fecha_registro=Tiempo()
+    def agregar_tarjeta(self,numero_tarjeta,codigo, banco):
+        tarjeta=TarjetaDeCompra(numero_tarjeta,codigo,banco)
+        self.tarjetas_compra.append(tarjeta)
+        print(f"Tarjeta {numero_tarjeta}vinculada al cliente {self.nombre+" "+self.apellido}({self.id_Cliente})")    
+    def mostrar_tarjetas(self):
+        if not self.tarjetas_compra:
+         print(f"El cliente no tiene tarjetas registradas")
+        else: 
+            print(f"Tarjetas de {self.nombre}:")
+            for t in self.tarjetas_compra:
+             t.info_tarjeta(t)    
+    def eliminar_tarjetas(self,numero_tarjeta):
+        for t in self.tarjetas_compra:
+            if t.numero_tarjeta==numero_tarjeta:
+                self.tarjetas_compra.remove(t)
+                print(f"Tarjeta {numero_tarjeta}eliminada del cliente {self.nombre}")
+            else: 
+                print(f"No se encontro la tarjeta {numero_tarjeta}  en el cliente {self.nombre}")              
 
     @staticmethod
     def parametros_data(data):

@@ -8,3 +8,4 @@ class TarjetaDeCompra:
     def info_tarjeta(self):
         print(f"Tarjeta: {self.numero_tarjeta}")
         print(f"Banco: {self.banco}")
+   
