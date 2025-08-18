@@ -15,7 +15,7 @@ class ListaInventario:
         if not self.primero:
             self.primero = nuevo_nodo
         else:
-            actual = self.primero
+            actual = self. primero
             while actual.siguiente:
                 actual = actual.siguiente
             actual.siguiente = nuevo_nodo
