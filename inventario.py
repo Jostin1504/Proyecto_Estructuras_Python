@@ -50,7 +50,7 @@ class ListaInventario:
         while actual:
             print(actual.dato)        
             print(actual.pila)        
-            print("----")
+            print(" -----------\n")
             actual = actual.siguiente
 
 #aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encontrar el articulo

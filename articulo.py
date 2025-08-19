@@ -7,4 +7,4 @@ class Articulo:
 
 #esto muestra la info, sin esto solo muestra la direccion de memoria
     def __str__(self):
-        return f"Articulo: {self.nombre}, Tipo: {self.tipo}, Precio: {self.precio}, Cantidad: {self.cantidad}"
+        return f" Articulo: {self.nombre}, Tipo: {self.tipo}, Precio: {self.precio}, Cantidad: {self.cantidad}"
