@@ -1,12 +1,11 @@
-#posible main aunque no se ocupe pero por costumbre y para ir probando lo que se tiene tambien
 from articulo import Articulo
 from inventario import ListaInventario
 
-inventario1 = ListaInventario()
+lista = ListaInventario()
 
-articulo1 = Articulo("Camisa", "Ropa", 19.99, 50)
-articulo2 = Articulo("TV", "Electrónica", 500.99, 30)
+lista.agregar_articulo(Articulo("Laptop", "Electrónica", 1500.00, 10))
+lista.agregar_articulo(Articulo("Teléfono", "Electrónica", 800.00, 5))
+lista.agregar_articulo(Articulo("Silla", "Muebles", 120.00, 20))
 
-inventario1.agregar_articulo(articulo1)
-inventario1.agregar_articulo(articulo2)
+lista.mostrar_articulos()
 

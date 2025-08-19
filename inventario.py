@@ -1,41 +1,56 @@
-class Nodo:
-    def __init__(self, dato):
-        self.dato = dato
-        self.siguiente = None
-        self.anterior = None
+#La lista va a manejar pilas de articulos iguales
+class PilaArticulos:
+    def __init__(self):
+        self.items = []
 
-#en primera instancia usariamos la lista para los inventarios de articulos
+    def apilar(self, items):
+       self.items.append(items)
+
+    def desapilar(self):
+        #si no hay items
+        if not self.items:
+            return None
+        #si, si hay
+        return self.items.pop()
+    
+    def __str__(self):
+        return f" Articulos apilados: {len(self.items)}"
+#como todos los objetos de los articulos son iguales no hace falta moverlos
+
+class Nodo:
+    def __init__(self, articulo):
+        self.dato = articulo
+        self.pila = PilaArticulos()  # Cada nodo tiene su propia pila de artículos
+        #copia los articulos en la pila
+        for _ in range(articulo.cantidad):
+            self.pila.apilar(articulo)
+
+        self.siguiente = None #ve la pila siguiente
+        self.anterior = None  #ve la pila anterior
+        
 #lista doblemente enlazada para mas practicidad
 class ListaInventario:
     def __init__(self):
         self.primero = None
+        self.ultimo = None
 
     def agregar_articulo(self, articulo):
         nuevo_nodo = Nodo(articulo)
         if not self.primero:
             self.primero = nuevo_nodo
+            self.ultimo = nuevo_nodo
         else:
-            actual = self. primero
-            while actual.siguiente:
-                actual = actual.siguiente
-            actual.siguiente = nuevo_nodo
-            nuevo_nodo.anterior = actual
+            self.ultimo.siguiente = nuevo_nodo
+            nuevo_nodo.anterior = self.ultimo
+            self.ultimo = nuevo_nodo
 
+    #Clase basica para mostrar que es doble:
     def mostrar_articulos(self):
         actual = self.primero
         while actual:
-            print(f"articulo: {actual.dato}")
+            print(actual.dato)        
+            print(actual.pila)        
+            print("----")
             actual = actual.siguiente
-    #Clase basica para mostrar que es doble:
-    def mostrar_articulos_reversa(self):
-        actual = self.primero
-        if not actual:
-            print("No hay articulos en el inventario.")
-            return
-        while actual.siguiente:
-            actual = actual.siguiente
-        while actual:
-            print(f"articulo: {actual.dato}")
-            actual = actual.anterior
 
-#aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encotrar el articulo
+#aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encontrar el articulo
