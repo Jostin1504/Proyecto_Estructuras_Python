@@ -53,4 +53,17 @@ class ListaInventario:
             print(" -----------\n")
             actual = actual.siguiente
 
-#aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encontrar el articulo
+    #metodos de ordenamiento selecction sort
+    def ordenarPorCantidad(lista):
+       ordenada = []
+       while lista:  #mientras no sea vacia
+            menor = lista[0]  #inicializa con pos 0
+            for item in lista:
+                if item.cantidad < menor.cantidad:
+                    menor = item
+            ordenada.append(menor)  #se copian los elementos ordenados en la nueva listina
+            lista.remove(menor)      #se mata la otra lista
+       return ordenada
+
+    #aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encontrar el articulo
+    
