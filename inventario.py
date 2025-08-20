@@ -65,5 +65,74 @@ class ListaInventario:
             lista.remove(menor)      #se mata la otra lista
        return ordenada
 
-    #aqui tambien se hacen las busquedas por lo que podemos usar la recursividad para encontrar el articulo
+    def ordenarPorPrecios(lista):
+        ordenada = []
+        while lista:
+            menor = lista[0]
+            for item in lista:
+                if item.precio < menor.precio:
+                    menor = item
+            ordenada.append(menor)
+            lista.remove(menor)
+        return ordenada
+
+    def ordenarAlfabeticamente(lista):
+        ordenada = []
+        while lista:
+            menor = lista[0]
+            for item in lista:
+                if item.nombre.lower() < menor.nombre.lower():
+                    menor = item
+            ordenada.append(menor)
+            lista.remove(menor)
+        return ordenada
+
+    #metodo de busqueda
+    def buscar_articulo_nombre(self, nombre):
+        actual = self.primero
+        while actual:
+            if actual.dato.nombre.lower() == nombre.lower():
+                return actual.dato
+            actual = actual.siguiente
+        return None
     
+    def buscar_articulo_tipo(self, tipo):
+        actual = self.primero
+        while actual:
+            if actual.dato.tipo.lower() == tipo.lower():
+                return actual.dato
+            actual = actual.siguiente
+        return None
+    
+    #este metodo esta hecho para que solo elimine despues de completar con exito la compra
+    def eliminar_articulo(self, nombre, cantidad):
+        actual = self.primero
+        while actual:
+            if actual.dato.nombre.lower() == nombre.lower():
+                for _ in range(cantidad):
+                    actual.pila.desapilar()
+                if not actual.pila.items:
+                    # Si la oila esta vacia se vuela el nodo
+                    if actual.anterior:
+                        actual.anterior.siguiente = actual.siguiente
+
+                    else:
+                        self.primero = actual.siguiente
+                    if actual.siguiente:
+                        actual.siguiente.anterior = actual.anterior
+                    else:
+                        self.ultimo = actual.anterior
+                return True
+            actual = actual.siguiente
+        return False
+
+    #Este metodo comprueba la cantidad de la pila para evitar que el usuario 
+    #intente comprar mas de los que hay 
+    def verificar_cantidad_articulo(self, nombre, cantidad):
+        actual = self.primero
+        while actual:
+            if actual.dato.nombre.lower() == nombre.lower():
+                return len(actual.pila.items) >= cantidad
+            actual = actual.siguiente
+        return False 
+        
