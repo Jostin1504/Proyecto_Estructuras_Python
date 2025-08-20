@@ -1,9 +1,18 @@
 class Articulo:
     def __init__(self, nombre, tipo, precio, cantidad):
-        self.nombre = nombre
-        self.tipo = tipo
-        self.precio = precio
-        self.cantidad = cantidad
+        if nombre == "" or tipo == "":
+            raise ValueError("El nombre y el tipo no pueden estar vacíos.")
+        else:
+            self.nombre = nombre
+            self.tipo = tipo
+        if precio < 0:
+            raise ValueError("El precio no puede ser negativo.")
+        else:
+            self.precio = precio
+        if cantidad < 0:
+            raise ValueError("La cantidad no puede ser negativa.")
+        else:
+            self.cantidad = cantidad
 
 #esto muestra la info, sin esto solo muestra la direccion de memoria
     def __str__(self):

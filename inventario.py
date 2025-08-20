@@ -86,7 +86,7 @@ class ListaInventario:
         while copia:
             menor = copia[0]
             for item in copia:
-                if len(item.pila.items.precio) < len(menor.pila.items.precio):
+                if item.dato.precio < menor.dato.precio:
                     menor = item
             ordenada.append(menor)
             copia.remove(menor)
@@ -99,7 +99,7 @@ class ListaInventario:
         while copia:
             menor = copia[0]
             for item in copia:
-                if len(item.nombre.lower()) < menor.nombre.lower():
+                if item.dato.nombre.lower() < menor.dato.nombre.lower():
                     menor = item
             ordenada.append(menor)
             copia.remove(menor)
@@ -110,7 +110,7 @@ class ListaInventario:
         actual = self.primero
         while actual:
             if actual.dato.nombre.lower() == nombre.lower():
-                return actual.dato
+                return actual.pila
             actual = actual.siguiente
         return None
     
@@ -130,7 +130,7 @@ class ListaInventario:
                 for _ in range(cantidad):
                     actual.pila.desapilar()
                 if not actual.pila.items:
-                    # Si la oila esta vacia se vuela el nodo
+                    # Si la pila esta vacia se vuela el nodo
                     if actual.anterior:
                         actual.anterior.siguiente = actual.siguiente
 
@@ -141,6 +141,28 @@ class ListaInventario:
                     else:
                         self.ultimo = actual.anterior
                 return True
+            actual = actual.siguiente
+        return False
+    
+    def eliminar_uno(self, nombre):
+        actual = self.primero
+        if not self.verificar_cantidad_articulo(nombre, 1):
+            print("No hay suficientes artículos en la pila.")
+            return False
+        else:
+            while actual:
+              if actual.dato.nombre.lower() == nombre.lower():
+                    actual.pila.desapilar()
+                    if not actual.pila.items:
+                        if actual.anterior:
+                          actual.anterior.siguiente = actual.siguiente
+                        else:
+                          self.primero = actual.siguiente
+                        if actual.siguiente:
+                          actual.siguiente.anterior = actual.anterior
+                        else:
+                          self.ultimo = actual.anterior
+                    return True
             actual = actual.siguiente
         return False
 
