@@ -53,38 +53,74 @@ class ListaInventario:
             print(" -----------\n")
             actual = actual.siguiente
 
+    #para que sirve este metodo?
+    #debido a que se manejan pilas de articulos copia, este metodo permite obtener una lista de nodos
+    #en otras palabras agarrar toda la pila
+    @staticmethod
+    def pasar_a_lista_nodos(lista_inventario):
+        nodos = []
+        actual = lista_inventario.primero
+        while actual:
+            nodos.append(actual)
+            actual = actual.siguiente
+        return nodos
+    
     #metodos de ordenamiento selecction sort
-    def ordenarPorCantidad(lista):
-       ordenada = []
-       while lista:  #mientras no sea vacia
-            menor = lista[0]  #inicializa con pos 0
-            for item in lista:
-                if item.cantidad < menor.cantidad:
-                    menor = item
-            ordenada.append(menor)  #se copian los elementos ordenados en la nueva listina
-            lista.remove(menor)      #se mata la otra lista
-       return ordenada
-
-    def ordenarPorPrecios(lista):
+    @staticmethod  #metodo para llamar sin instancia lo que seria un STATIC en c++
+    def ordenarPorCantidad(lista_nodos):
         ordenada = []
-        while lista:
-            menor = lista[0]
-            for item in lista:
-                if item.precio < menor.precio:
+        copia = lista_nodos[:] #copia la lista original
+        while copia:
+            menor = copia[0]
+            for item in copia:
+                if len(item.pila.items) < len(menor.pila.items): # Compara la can de articulos
                     menor = item
             ordenada.append(menor)
-            lista.remove(menor)
+            copia.remove(menor)
+
+    def ordenXcan(self):
+        # Obtiene los nodos en una lista
+        nodos = self.pasar_a_lista_nodos(self)
+        # Ordena los nodos por cantidad
+        ordenados = self.ordenarPorCantidad(nodos)
+        # Reconstruye la lista enlazada
+        self.primero = None
+        self.ultimo = None
+        for nodo in ordenados:
+            nodo.anterior = None
+            nodo.siguiente = None
+            if not self.primero:
+                self.primero = nodo
+                self.ultimo = nodo
+            else:
+                self.ultimo.siguiente = nodo
+                nodo.anterior = self.ultimo
+                self.ultimo = nodo
+
+    @staticmethod
+    def ordenarPorPrecios(lista_nodos):
+        ordenada = []
+        copia = lista_nodos[:]
+        while copia:
+            menor = copia[0]
+            for item in copia:
+                if len(item.pila.items.precio) < len(menor.pila.items.precio):
+                    menor = item
+            ordenada.append(menor)
+            copia.remove(menor)
         return ordenada
 
-    def ordenarAlfabeticamente(lista):
+    @staticmethod
+    def ordenarAlfabeticamente(lista_nodos):
         ordenada = []
-        while lista:
-            menor = lista[0]
-            for item in lista:
-                if item.nombre.lower() < menor.nombre.lower():
+        copia = lista_nodos[:]
+        while copia:
+            menor = copia[0]
+            for item in copia:
+                if len(item.nombre.lower()) < menor.nombre.lower():
                     menor = item
             ordenada.append(menor)
-            lista.remove(menor)
+            copia.remove(menor)
         return ordenada
 
     #metodo de busqueda
