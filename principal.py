@@ -12,8 +12,7 @@ lista.mostrar_articulos()
 
 
 print("Ordenando por cantidad...\n")
-lista.ordenXcan()
+lista_pila = lista.pasar_a_lista_nodos(lista)
+lista_ordenada_cantidad = lista.ordenarPorCantidad(lista_pila)
 
-
-
-
+lista.mostrar_articulos()

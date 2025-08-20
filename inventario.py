@@ -77,25 +77,7 @@ class ListaInventario:
                     menor = item
             ordenada.append(menor)
             copia.remove(menor)
-
-    def ordenXcan(self):
-        # Obtiene los nodos en una lista
-        nodos = self.pasar_a_lista_nodos(self)
-        # Ordena los nodos por cantidad
-        ordenados = self.ordenarPorCantidad(nodos)
-        # Reconstruye la lista enlazada
-        self.primero = None
-        self.ultimo = None
-        for nodo in ordenados:
-            nodo.anterior = None
-            nodo.siguiente = None
-            if not self.primero:
-                self.primero = nodo
-                self.ultimo = nodo
-            else:
-                self.ultimo.siguiente = nodo
-                nodo.anterior = self.ultimo
-                self.ultimo = nodo
+        return ordenada
 
     @staticmethod
     def ordenarPorPrecios(lista_nodos):
