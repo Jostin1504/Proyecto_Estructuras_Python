@@ -21,7 +21,7 @@ class Nodo:
     def __init__(self, articulo):
         self.dato = articulo
         self.pila = PilaArticulos()  # Cada nodo tiene su propia pila de artículos
-        #copia los articulos en la pila
+                                     #copia los articulos en la pila por la cantidad ingresada
         for _ in range(articulo.cantidad):
             self.pila.apilar(articulo)
 
