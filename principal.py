@@ -15,8 +15,6 @@ lista.mostrar_articulos()
 print("Buscando artículo por nombre: ")
 pilabusqueda = lista.buscar_articulo_nombre("Laptop")
 print(pilabusqueda)
-lista.eliminar_uno("Libro")
-
 
 
 print("Ordenando por cantidad...\n")
@@ -28,6 +26,10 @@ for nodo in lista_ordenada_cantidad:
     print(nodo.dato)   #muestra el articulo
     print(nodo.pila)   #muestra la pila
     print(" -----------\n")
+
+print("Eliminando un artículo de la pila...")
+lista.eliminar_articulo("Laptop", 8)
+print(pilabusqueda)
 
 print("Ordenando por precios...\n")
 lista_ordenada_precios = lista.ordenarPorPrecios(lista_pila)
@@ -42,3 +44,5 @@ for nodo in lista_ordenada_alfabeticamente:
     print(nodo.dato)
     print(nodo.pila)
     print(" -----------\n")
+
+
