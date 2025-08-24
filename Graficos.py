@@ -1,16 +1,22 @@
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+clases_base_path = os.path.join(current_dir, "Clases_Base")
+sys.path.append(clases_base_path)
+estructuras_path = os.path.join(current_dir, "Estructuras")
+sys.path.append(estructuras_path)
 import customtkinter as ctk
 from tkinter import messagebox
 import tkinter as tk
 from PIL import Image, ImageTk
-import os
-from Cliente import Cliente
-from GestionClientes import GestionClientes
-from Carrodecompra import CarroDeCompra
-from inventario import PilaArticulos, ListaInventario, Nodo
-from articulo import Articulo
+from Clases_Base.Cliente import Cliente
+from Estructuras.GestionClientes import GestionClientes
+from Estructuras.Carrodecompra import CarroDeCompra
+from Estructuras.inventario import PilaArticulos, ListaInventario, Nodo
+from Clases_Base.articulo import Articulo
 from Procesar_Pago import ProcesarPago
-from GestionTarjetas import GestionTarjetas
-from GestionClientes import GestionClientes
+from Estructuras.GestionTarjetas import GestionTarjetas
+from Estructuras.GestionClientes import GestionClientes
 class SistemaCompraModerno:
     def __init__(self):
         
