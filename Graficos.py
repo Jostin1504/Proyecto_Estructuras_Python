@@ -5,6 +5,8 @@ clases_base_path = os.path.join(current_dir, "Clases_Base")
 sys.path.append(clases_base_path)
 estructuras_path = os.path.join(current_dir, "Estructuras")
 sys.path.append(estructuras_path)
+Proyecto_Estructuras_Python_path= os.path.join(current_dir,"Proyecto_Estructuras_Python")
+sys.path.append(Proyecto_Estructuras_Python_path)
 import customtkinter as ctk
 from tkinter import messagebox
 import tkinter as tk
@@ -28,9 +30,10 @@ class SistemaCompraModerno:
         self.centrar_ventana()
         self.usuario_actual = None
         self.carrito = None
-        self.inventario = PilaArticulos() 
+        self.inventario = ListaInventario()
         self.gestion_clientes = GestionClientes("clientes.csv")
         self.gestion_tarjetas = GestionTarjetas("tarjetas.csv",self.gestion_clientes)
+        self.inicializar_inventario()
         
         self.crear_interfaz_principal()
         
@@ -222,26 +225,289 @@ class SistemaCompraModerno:
             font=ctk.CTkFont(size=14)
         )
         placeholder.pack(pady=50)
+    def inicializar_inventario(self):
+     """Cargar productos predefinidos al inventario"""
+    # Agregar productos de prueba
+     productos_iniciales = [
+          ("Laptop", "Electrónica", 1500.00, 10),
+          ("Teléfono", "Electrónica", 800.00, 5),
+          ("Silla", "Muebles", 120.00, 20),
+          ("Mesa", "Muebles", 200.00, 15),
+          ("Libro", "Educación", 30.00, 50),
+          ("Cámara", "Fotografía", 600.00, 7)
+          ]
+    
+     for nombre, tipo, precio, cantidad in productos_iniciales:
+        articulo = Articulo(nombre, tipo, precio, cantidad)
+        self.inventario.agregar_articulo(articulo)
+    
+     print(f"Inventario inicializado con {len(productos_iniciales)} productos")    
     
     def mostrar_inventario(self):
-        """Mostrar la interfaz del inventario"""
-        self.limpiar_contenido()
-        
-        title_label = ctk.CTkLabel(
-            self.content_frame,
-            text="📦 Gestión de Inventario",
-            font=ctk.CTkFont(size=24, weight="bold")
+       """Mostrar la interfaz del inventario con productos y controles"""
+       self.limpiar_contenido()
+    
+    # Título
+       title_label = ctk.CTkLabel(
+        self.content_frame,
+        text="📦 Gestión de Inventario",
+        font=ctk.CTkFont(size=24, weight="bold")
         )
-        title_label.pack(pady=20)
-        inv_frame = ctk.CTkFrame(self.content_frame)
-        inv_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        placeholder = ctk.CTkLabel(
-            inv_frame,
-            text="Módulo de inventario en construcción...",
-            font=ctk.CTkFont(size=16)
+       title_label.pack(pady=20)
+    
+    # Frame principal del inventario
+       inv_frame = ctk.CTkFrame(self.content_frame)
+       inv_frame.pack(fill="both", expand=True, padx=20, pady=10)
+    
+    # Frame de controles
+       controls_frame = ctk.CTkFrame(inv_frame)
+       controls_frame.pack(fill="x", padx=20, pady=10)
+    
+    # Botones de control
+       btn_agregar = ctk.CTkButton(
+        controls_frame,
+        text="➕ Agregar Producto",
+        command=self.agregar_producto,
+        height=35
+       )
+       btn_agregar.pack(side="left", padx=5)
+    
+    # Frame de ordenamiento
+       sort_frame = ctk.CTkFrame(controls_frame)
+       sort_frame.pack(side="right", padx=10)
+    
+       sort_label = ctk.CTkLabel(sort_frame, text="Ordenar por:")
+       sort_label.pack(side="left", padx=5)
+    
+       self.sort_var = ctk.StringVar(value="nombre")
+       sort_menu = ctk.CTkOptionMenu(
+        sort_frame,
+        values=["nombre", "precio", "cantidad", "tipo"],
+        variable=self.sort_var,
+        command=self.ordenar_inventario
+          )
+       sort_menu.pack(side="left", padx=5)
+    
+    # Frame de búsqueda
+       search_frame = ctk.CTkFrame(controls_frame)
+       search_frame.pack(side="right", padx=10)
+    
+       self.search_var = ctk.StringVar()
+       search_entry = ctk.CTkEntry(
+        search_frame,
+        placeholder_text="Buscar producto...",
+        textvariable=self.search_var,
+        width=200
+         )
+       search_entry.pack(side="left", padx=5)
+       search_entry.bind("<KeyRelease>", self.buscar_producto)
+    
+       btn_buscar = ctk.CTkButton(
+        search_frame,
+        text="🔍",
+        command=self.buscar_producto,
+        width=30
         )
-        placeholder.pack(pady=100)
+       btn_buscar.pack(side="left", padx=5)
+    
+    # Frame scrollable para la lista de productos
+       self.productos_frame = ctk.CTkScrollableFrame(
+        inv_frame, 
+        label_text="Lista de Productos",
+        height=400
+         )
+       self.productos_frame.pack(fill="both", expand=True, padx=20, pady=10)
+    
+    # Cargar y mostrar productos
+       self.cargar_productos_en_interfaz()
+
+    def cargar_productos_en_interfaz(self, productos_filtrados=None):
+      """Cargar productos en la interfaz gráfica"""
+    # Limpiar productos existentes
+      for widget in self.productos_frame.winfo_children():
+        widget.destroy()
+    
+    # Obtener lista de nodos del inventario
+      try:
+         lista_nodos = self.inventario.pasar_a_lista_nodos(self.inventario)
+         print(f"DEBUG: Se encontraron {len(lista_nodos)} productos en el inventario")
+        
+        # Usar productos filtrados si se proporcionan
+         if productos_filtrados is not None:
+            lista_nodos = productos_filtrados
+            print(f"DEBUG: Usando productos filtrados: {len(lista_nodos)}")
+        
+        # Si no hay productos
+         if not lista_nodos:
+            no_products_label = ctk.CTkLabel(
+                self.productos_frame,
+                text="No se encontraron productos",
+                font=ctk.CTkFont(size=16)
+            )
+            no_products_label.pack(pady=50)
+            return
+        
+        # Crear tarjetas para cada producto
+         print(f"DEBUG: Creando tarjetas para {len(lista_nodos)} productos...")
+         for i, nodo in enumerate(lista_nodos):
+            print(f"DEBUG: Creando tarjeta {i+1}: {nodo.dato.nombre}")
+            self.crear_tarjeta_producto(nodo)
+            
+      except Exception as e:
+        print(f"ERROR en cargar_productos_en_interfaz: {e}")
+        error_label = ctk.CTkLabel(
+            self.productos_frame,
+            text=f"Error al cargar productos: {str(e)}",
+            font=ctk.CTkFont(size=16),
+            text_color=("red", "lightcoral")
+        )
+        error_label.pack(pady=50)
+
+    def crear_tarjeta_producto(self, nodo):
+      """Crear una tarjeta visual para un producto"""
+      articulo = nodo.dato
+      cantidad_disponible = len(nodo.pila.items)
+    
+    # Frame principal de la tarjeta
+      card_frame = ctk.CTkFrame(self.productos_frame)
+      card_frame.pack(fill="x", padx=10, pady=5)
+    
+    # Configurar grid
+      card_frame.grid_columnconfigure(1, weight=1)
+    
+    # Icono del producto (basado en tipo)
+      iconos_tipo = {
+        "Electrónica": "💻",
+        "Muebles": "🪑", 
+        "Educación": "📚",
+        "Fotografía": "📷"
+       }
+      icono = iconos_tipo.get(articulo.tipo, "📦")
+    
+      icon_label = ctk.CTkLabel(
+        card_frame,
+        text=icono,
+        font=ctk.CTkFont(size=30)
+      )
+      icon_label.grid(row=0, column=0, rowspan=2, padx=15, pady=15)
+    
+    # Información del producto
+      info_frame = ctk.CTkFrame(card_frame)
+      info_frame.grid(row=0, column=1, sticky="ew", padx=10, pady=10)
+      info_frame.grid_columnconfigure(1, weight=1)
+    
+    # Nombre del producto
+      nombre_label = ctk.CTkLabel(
+        info_frame,
+        text=articulo.nombre,
+        font=ctk.CTkFont(size=18, weight="bold")
+       )
+      nombre_label.grid(row=0, column=0, columnspan=2, sticky="w", padx=10, pady=5)
+    
+    # Tipo
+      tipo_label = ctk.CTkLabel(
+        info_frame,
+        text=f"Categoría: {articulo.tipo}",
+        font=ctk.CTkFont(size=12)
+       )
+      tipo_label.grid(row=1, column=0, sticky="w", padx=10, pady=2)
+    
+    # Precio
+      precio_label = ctk.CTkLabel(
+        info_frame,
+        text=f"Precio: ${articulo.precio:.2f}",
+        font=ctk.CTkFont(size=14, weight="bold"),
+        text_color=("green", "lightgreen")
+     )
+      precio_label.grid(row=1, column=1, sticky="e", padx=10, pady=2)
+    
+    # Cantidad disponible
+      color_cantidad = ("red", "lightcoral") if cantidad_disponible < 5 else ("blue", "lightblue")
+      cantidad_label = ctk.CTkLabel(
+        info_frame,
+        text=f"Stock: {cantidad_disponible} unidades",
+        font=ctk.CTkFont(size=12),
+        text_color=color_cantidad
+      )
+      cantidad_label.grid(row=2, column=0, sticky="w", padx=10, pady=2)
+    
+    # Botones de acción
+      buttons_frame = ctk.CTkFrame(card_frame)
+      buttons_frame.grid(row=0, column=2, padx=10, pady=10)
+    
+      btn_editar = ctk.CTkButton(
+        buttons_frame,
+        text="✏️",
+        width=30,
+        command=lambda a=articulo: self.editar_producto(a)
+       )
+      btn_editar.pack(pady=2)
+    
+      btn_eliminar = ctk.CTkButton(
+        buttons_frame,
+        text="🗑️",
+        width=30,
+        fg_color=("red", "darkred"),
+        hover_color=("darkred", "red"),
+        command=lambda n=articulo.nombre: self.confirmar_eliminar_producto(n)
+      )
+      btn_eliminar.pack(pady=2)
+
+    def ordenar_inventario(self, criterio):
+       """Ordenar productos según el criterio seleccionado"""
+       lista_nodos = self.inventario.pasar_a_lista_nodos(self.inventario)
+    
+       if criterio == "nombre":
+        productos_ordenados = self.inventario.ordenarAlfabeticamente(lista_nodos)
+       elif criterio == "precio":
+        productos_ordenados = self.inventario.ordenarPorPrecios(lista_nodos)
+       elif criterio == "cantidad":
+        productos_ordenados = self.inventario.ordenarPorCantidad(lista_nodos)
+       elif criterio == "tipo":
+        # Ordenar por tipo (implementación básica)
+        productos_ordenados = sorted(lista_nodos, key=lambda x: x.dato.tipo.lower())
+       else:
+        productos_ordenados = lista_nodos
+    
+       self.cargar_productos_en_interfaz(productos_ordenados)
+
+    def buscar_producto(self, event=None):
+      """Buscar productos que coincidan con el término de búsqueda"""
+      termino = self.search_var.get().strip().lower()
+    
+      if not termino:
+        # Si no hay término de búsqueda, mostrar todos
+        self.cargar_productos_en_interfaz()
+        return
+    
+    # Buscar productos que contengan el término
+      lista_nodos = self.inventario.pasar_a_lista_nodos(self.inventario)
+      productos_filtrados = []
+    
+      for nodo in lista_nodos:
+        articulo = nodo.dato
+        if (termino in articulo.nombre.lower() or 
+            termino in articulo.tipo.lower() or
+            termino in str(articulo.precio)):
+            productos_filtrados.append(nodo)
+    
+      self.cargar_productos_en_interfaz(productos_filtrados)
+
+    def agregar_producto(self):
+      """Abrir modal para agregar nuevo producto"""
+      messagebox.showinfo("Agregar Producto", "Funcionalidad de agregar producto en desarrollo...")
+
+    def editar_producto(self, articulo):
+      """Editar un producto existente"""
+      messagebox.showinfo("Editar Producto", f"Editando: {articulo.nombre}")
+
+    def confirmar_eliminar_producto(self, nombre_producto):
+       """Confirmar eliminación de producto"""
+       if messagebox.askyesno("Confirmar Eliminación", 
+                          f"¿Estás seguro de eliminar '{nombre_producto}' del inventario?"):
+        # Aquí iría la lógica de eliminación
+         messagebox.showinfo("Producto Eliminado", f"'{nombre_producto}' ha sido eliminado del inventario")
+         self.cargar_productos_en_interfaz()  # Refrescar vista
     
     def mostrar_nueva_compra(self):
         """Mostrar la interfaz para nueva compra"""
@@ -337,8 +603,179 @@ class SistemaCompraModerno:
         ctk.set_appearance_mode(nuevo_tema)
     
     def nuevo_cliente(self):
-        """Abrir diálogo para nuevo cliente"""
-        messagebox.showinfo("Nuevo Cliente", "Funcionalidad de nuevo cliente en desarrollo...")
+        self.modal_cliente = ctk.CTkToplevel(self.root)
+        self.modal_cliente.title("➕ Nuevo Cliente")
+        self.modal_cliente.geometry("500x600")
+        self.modal_cliente.transient(self.root)
+        self.modal_cliente.grab_set()
+    
+     # Centrar la ventana modal
+        self.modal_cliente.update_idletasks()
+        x = (self.modal_cliente.winfo_screenwidth() // 2) - (250)
+        y = (self.modal_cliente.winfo_screenheight() // 2) - (300)
+        self.modal_cliente.geometry(f"500x600+{x}+{y}")
+    
+     # Frame principal
+        main_frame = ctk.CTkFrame(self.modal_cliente)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+    
+     # Título
+        title_label = ctk.CTkLabel(
+        main_frame,
+        text="Registrar Nuevo Cliente",
+        font=ctk.CTkFont(size=20, weight="bold")
+        )
+        title_label.pack(pady=(10, 30))
+    
+     # Frame para el formulario
+        form_frame = ctk.CTkFrame(main_frame)
+        form_frame.pack(fill="x", padx=20, pady=10)
+    
+     # Variables para los campos
+        self.nombre_var = ctk.StringVar()
+        self.apellido_var = ctk.StringVar()
+        self.telefono_var = ctk.StringVar()
+        self.correo_var = ctk.StringVar()
+        self.direccion_var = ctk.StringVar()
+        self.id_cliente_var = ctk.StringVar()
+     # Campos del formulario
+        fields=[
+            ("Nombre:", self.nombre_var),
+            ("Apellido:", self.apellido_var),
+            ("Teléfono:", self.telefono_var),
+            ("Correo:", self.correo_var),
+            ("Dirección:", self.direccion_var),
+            ("ID Cliente:", self.id_cliente_var)
+        ]
+    
+     # Crear los campos
+        for i, (label_text, var) in enumerate(fields):
+        # Label
+            label = ctk.CTkLabel(form_frame, text=label_text, font=ctk.CTkFont(size=14))
+            label.pack(anchor="w", padx=20, pady=(15, 5))
+        
+        # Entry
+            entry = ctk.CTkEntry(
+                form_frame, 
+                textvariable=var,
+                height=35,
+                font=ctk.CTkFont(size=12)
+            )
+            entry.pack(fill="x", padx=20, pady=(0, 10))
+        
+        # Si es el primer campo, darle foco
+            if i == 0:
+                entry.focus()
+    
+     # Frame para botones
+        buttons_frame = ctk.CTkFrame(main_frame)
+        buttons_frame.pack(fill="x", padx=20, pady=20)
+    
+     # Botón Cancelar
+        btn_cancelar = ctk.CTkButton(
+          buttons_frame,
+          text="❌ Cancelar",
+          command=self.modal_cliente.destroy,
+          height=40,
+          fg_color=("gray70", "gray30"),
+          hover_color=("gray60", "gray40")
+           )
+        btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
+    
+    # Botón Guardar
+        btn_guardar = ctk.CTkButton(
+          buttons_frame,
+          text="💾 Guardar Cliente",
+          command=self.guardar_cliente,
+          height=40,
+          font=ctk.CTkFont(size=14, weight="bold")
+          )
+        btn_guardar.pack(side="right", padx=20, pady=15)
+
+    def guardar_cliente(self):
+      """Validar y guardar el nuevo cliente"""
+    
+    # Obtener valores
+      nombre = self.nombre_var.get().strip()
+      apellido = self.apellido_var.get().strip()
+      telefono = self.telefono_var.get().strip()
+      correo = self.correo_var.get().strip()
+      direccion = self.direccion_var.get().strip()
+      id_cliente = self.id_cliente_var.get().strip()
+    
+    # Validaciones básicas
+      errores = []
+    
+      if not nombre:
+        errores.append("• El nombre es obligatorio")
+    
+      if not apellido:
+        errores.append("• El apellido es obligatorio")
+        
+      if not telefono:
+        errores.append("• El teléfono es obligatorio")
+      elif not telefono.isdigit() or len(telefono) < 8:
+        errores.append("• El teléfono debe tener al menos 8 dígitos")
+    
+      if not correo:
+        errores.append("• El correo es obligatorio")
+      elif "@" not in correo or "." not in correo.split("@")[-1]:
+        errores.append("• El formato del correo no es válido")
+    
+      if not direccion:
+        errores.append("• La dirección es obligatoria")
+        
+      if not id_cliente:
+        errores.append("• El ID del cliente es obligatorio")
+    
+    # Si hay errores, mostrarlos
+      if errores:
+        mensaje_error = "Por favor corrige los siguientes errores:\n\n" + "\n".join(errores)
+        messagebox.showerror("Errores de validación", mensaje_error)
+        return
+    
+    # Intentar registrar el cliente
+      try:
+        # Crear objeto cliente con fecha actual
+         from Fechas import Tiempo
+         fecha_registro = Tiempo.Ahora()
+        
+         cliente = Cliente(
+            nombre=nombre,
+            apellido=apellido,
+            telefono=telefono,
+            correo=correo,
+            direccion_envio=direccion,
+            id_Cliente=id_cliente,
+            fecha_registro=fecha_registro
+               )
+        
+        # Intentar registrar en el sistema
+         if self.gestion_clientes.registrar_cliente(nombre, id_cliente, "password_default"):
+            messagebox.showinfo(
+                "Cliente Registrado", 
+                f"Cliente {nombre} {apellido} registrado exitosamente!\nID: {id_cliente}"
+            )
+            
+            # Cerrar modal
+            self.modal_cliente.destroy()
+            
+            # Actualizar la vista de clientes si está activa
+            self.actualizar_lista_clientes()
+            
+         else:
+            messagebox.showerror(
+                "Error de Registro", 
+                f"Ya existe un cliente con el ID: {id_cliente}\nPor favor usa un ID diferente."
+            )
+            
+      except Exception as e:
+        messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
+
+    def actualizar_lista_clientes(self):
+     """Actualizar la lista de clientes en la interfaz"""
+    # Esta función la implementaremos después para refrescar la vista
+     print(f"Lista de clientes actualizada. Total: {len(self.gestion_clientes.clientes)}")
     
     def buscar_cliente(self):
         """Abrir diálogo para buscar cliente"""

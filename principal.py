@@ -1,5 +1,14 @@
-from articulo import Articulo
-from inventario import ListaInventario
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+clases_base_path = os.path.join(current_dir, "Clases_Base")
+sys.path.append(clases_base_path)
+estructuras_path = os.path.join(current_dir, "Estructuras")
+sys.path.append(estructuras_path)
+Proyecto_Estructuras_Python_path= os.path.join(current_dir,"Proyecto_Estructuras_Python")
+sys.path.append(Proyecto_Estructuras_Python_path)
+from Clases_Base.articulo import Articulo
+from Estructuras.inventario import ListaInventario
 
 lista = ListaInventario()
 
