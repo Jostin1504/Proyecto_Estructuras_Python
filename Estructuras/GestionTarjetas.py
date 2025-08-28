@@ -14,8 +14,8 @@ class GestionTarjetas:
         self.tarjetas = []
         try:
             with open(self.archivo_tarjetas, newline='', encoding='utf-8') as f:
-                lector = csv.reader(f)
-                for num, cvv, banco, id_usuario in lector:
+                reader = csv.reader(f)
+                for num, cvv, banco, id_usuario in reader:
                     tarjeta = TarjetaDeCompra(num, cvv, banco, id_usuario)
                     self.tarjetas.append(tarjeta)
                     cliente = self.gestor_clientes.login(id_usuario, None)

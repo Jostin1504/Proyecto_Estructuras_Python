@@ -1,7 +1,7 @@
 import csv
 
 from Cliente import Cliente
-
+#Si quiere agrega la clase Cargar y Guardar en vez de hacerlo de manera local
 class GestionClientes:
     def __init__(self, archivo_clientes):
         self.archivo_clientes = archivo_clientes
@@ -12,8 +12,8 @@ class GestionClientes:
         self.clientes = []
         try:
             with open(self.archivo_clientes, newline='', encoding='utf-8') as archivo:
-                lector = csv.reader(archivo)
-                for fila in lector:  
+                reader = csv.reader(archivo)
+                for fila in reader:  
                     c = Cliente(fila[0], fila[1], fila[2])
                     self.clientes.append(c)
         except FileNotFoundError:
@@ -21,6 +21,7 @@ class GestionClientes:
                 pass
 
     def guardar_clientes(self):
+        #self.clientes=cargar_clientes(self.archivo_clientes) creo que sería para llamarlo
         with open(self.archivo_clientes, 'w', newline='', encoding='utf-8') as archivo:
             escritor = csv.writer(archivo)
             for c in self.clientes:
