@@ -629,7 +629,7 @@ class SistemaCompraModerno:
     
      # Frame para el formulario
         form_frame = ctk.CTkFrame(main_frame)
-        form_frame.pack(fill="x", padx=20, pady=10)
+        form_frame.pack(fill="x", padx=22, pady=17)
     
      # Variables para los campos
         self.nombre_var = ctk.StringVar()
@@ -638,6 +638,8 @@ class SistemaCompraModerno:
         self.correo_var = ctk.StringVar()
         self.direccion_var = ctk.StringVar()
         self.id_cliente_var = ctk.StringVar()
+        self.fecha_registro_var=ctk.StringVar()
+        self.password_var=ctk.StringVar()
      # Campos del formulario
         fields=[
             ("Nombre:", self.nombre_var),
@@ -645,7 +647,9 @@ class SistemaCompraModerno:
             ("Teléfono:", self.telefono_var),
             ("Correo:", self.correo_var),
             ("Dirección:", self.direccion_var),
-            ("ID Cliente:", self.id_cliente_var)
+            ("ID Cliente:", self.id_cliente_var),
+            ("Fecha de Registro",self.fecha_registro_var),
+            ("Contraseña",self.password_var)
         ]
     
      # Crear los campos
@@ -702,6 +706,8 @@ class SistemaCompraModerno:
       correo = self.correo_var.get().strip()
       direccion = self.direccion_var.get().strip()
       id_cliente = self.id_cliente_var.get().strip()
+      fecha_registro=self.fecha_registro_var.get().strip()
+      password=self.password_var.get().strip()
     
     # Validaciones básicas
       errores = []
@@ -746,12 +752,13 @@ class SistemaCompraModerno:
             telefono=telefono,
             correo=correo,
             direccion_envio=direccion,
-            id_Cliente=id_cliente,
-            fecha_registro=fecha_registro
+            id_cliente=id_cliente,
+            fecha_registro=fecha_registro,
+            password=password
                )
         
         # Intentar registrar en el sistema
-         if self.gestion_clientes.registrar_cliente(nombre, id_cliente, "password_default"):
+         if self.gestion_clientes.registrar_cliente(nombre,id_cliente,password,apellido, telefono, correo,direccion,fecha_registro):
             messagebox.showinfo(
                 "Cliente Registrado", 
                 f"Cliente {nombre} {apellido} registrado exitosamente!\nID: {id_cliente}"

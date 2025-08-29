@@ -4,19 +4,20 @@ from datetime import datetime,timedelta, timezone #timezone nos sirve por si en 
 from Fechas import Tiempo
 from Tarjeta import TarjetaDeCompra
 class Cliente:
-    def __init__(self, nombre, apellido, telefono, correo, direccion_envio,id_Cliente,fecha_registro):
+    def __init__(self, nombre, apellido, telefono, correo, direccion_envio,id_cliente,fecha_registro,password):
         self.nombre = nombre
         self.apellido=apellido
         self.telefono=telefono
         self.correo=correo
         self.direccion_envio=direccion_envio
-        self.id_Cliente=id_Cliente
+        self.id_cliente=id_cliente
         self.fecha_registro=fecha_registro
+        self.password=password
         self.Historial_compras=[] #Puede ser para ver el carrito de compras
         self.tarjetas_compra=[] #lista de tarjetas registradas
 
     def info_cliente(self):
-        print(f"Cliente: {self.nombre}({self.id_Cliente})")
+        print(f"Cliente: {self.nombre}({self.id_cliente})")
         print(f"Apellido{self.apellido}")
         print(f"Telefono:{self.telefono}")
         print(f"Correo: {self.correo}")
@@ -24,7 +25,7 @@ class Cliente:
         print(f"fecha_registro{self.fecha_registro}")
     def parametros(self):
         return{
-            "id_Cliente":self.id_Cliente,
+            "id_Cliente":self.id_cliente,
             "nombre":self.nombre,
             "Apellido":self.apellido,
             "correo":self.correo,
@@ -37,7 +38,7 @@ class Cliente:
     def agregar_tarjeta(self,numero_tarjeta,codigo, banco):
         tarjeta=TarjetaDeCompra(numero_tarjeta,codigo,banco)
         self.tarjetas_compra.append(tarjeta)
-        print(f"Tarjeta {numero_tarjeta}vinculada al cliente {self.nombre+" "+self.apellido}({self.id_Cliente})")    
+        print(f"Tarjeta {numero_tarjeta}vinculada al cliente {self.nombre+" "+self.apellido}({self.id_cliente})")    
     def mostrar_tarjetas(self):
         if not self.tarjetas_compra:
          print(f"El cliente no tiene tarjetas registradas")
