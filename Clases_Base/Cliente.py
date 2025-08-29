@@ -31,7 +31,8 @@ class Cliente:
             "correo":self.correo,
             "Telefono":self.telefono,
             "direccion_envio":self.direccion_envio,
-            "fecha_registro":self.fecha_registro
+            "fecha_registro":self.fecha_registro,
+            "password": self.password
         }    
     def fecha_de_registro(self):
         self.fecha_registro=Tiempo()
@@ -62,9 +63,11 @@ class Cliente:
             telefono=data["telefono"],
             correo=data["correo"],
             direccion_envio=data["direccion_envio"],
-            id_Cliente=data["id_Cliente"]
+            id_cliente=data["id_cliente"],
+            fecha_registro=data["fecha_registro"], 
+        password=data.get("password", "")
         )
-        cliente.fecha_registro = Tiempo.from_string(data["fecha_registro"])
+
         cliente.historial_compras = data["historial_compras"].split(";") if data["historial_compras"] else []
         return cliente
 
