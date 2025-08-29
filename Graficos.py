@@ -461,19 +461,272 @@ class SistemaCompraModerno:
 
     def agregar_producto(self):
       """Abrir modal para agregar nuevo producto"""
-      messagebox.showinfo("Agregar Producto", "Funcionalidad de agregar producto en desarrollo...")
+      self.modal_producto = ctk.CTkToplevel(self.root)
+      self.modal_producto.title("➕ Nuevo Producto")
+      self.modal_producto.geometry("500x600")
+      self.modal_producto.transient(self.root)
+      self.modal_producto.grab_set()
 
+    # Centrar la ventana modal
+      self.modal_producto.update_idletasks()
+      x = (self.modal_producto.winfo_screenwidth() // 2) - (250)
+      y = (self.modal_producto.winfo_screenheight() // 2) - (300)
+      self.modal_producto.geometry(f"500x600+{x}+{y}")
+
+    # Frame principal
+      main_frame = ctk.CTkFrame(self.modal_producto)
+      main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # Título
+      title_label = ctk.CTkLabel(
+         main_frame,
+         text="Registrar Nuevo Producto",
+         font=ctk.CTkFont(size=20, weight="bold")
+         )
+      title_label.pack(pady=(10, 30))
+
+    # Frame para el formulario
+      form_frame = ctk.CTkFrame(main_frame)
+      form_frame.pack(fill="x", padx=22, pady=17)
+
+    # Variables para los campos
+      self.nombre_producto_var = ctk.StringVar()
+      self.tipo_producto_var = ctk.StringVar(value="Electrónica")  # Valor por defecto
+      self.precio_producto_var = ctk.StringVar()
+      self.cantidad_producto_var = ctk.StringVar()
+  
+    # Campo Nombre
+      nombre_label = ctk.CTkLabel(form_frame, text="Nombre del Producto:", font=ctk.CTkFont(size=14))
+      nombre_label.pack(anchor="w", padx=20, pady=(15, 5))
+    
+      nombre_entry = ctk.CTkEntry(
+         form_frame, 
+         textvariable=self.nombre_producto_var,
+         height=35,
+         font=ctk.CTkFont(size=12),
+         placeholder_text="Ej: Laptop Gaming"
+         )
+      nombre_entry.pack(fill="x", padx=20, pady=(0, 10))
+      nombre_entry.focus()  # Dar foco al primer campo
+
+    # Campo Tipo/Categoría
+      tipo_label = ctk.CTkLabel(form_frame, text="Categoría:", font=ctk.CTkFont(size=14))
+      tipo_label.pack(anchor="w", padx=20, pady=(15, 5))
+    
+      tipo_menu = ctk.CTkOptionMenu(
+         form_frame,
+         values=["Electrónica", "Muebles", "Educación", "Fotografía", "Ropa", "Deportes", "Hogar", "Otros"],
+         variable=self.tipo_producto_var,
+         height=35,
+         font=ctk.CTkFont(size=12)
+         )
+      tipo_menu.pack(fill="x", padx=20, pady=(0, 10))
+
+    # Campo Precio
+      precio_label = ctk.CTkLabel(form_frame, text="Precio (USD):", font=ctk.CTkFont(size=14))
+      precio_label.pack(anchor="w", padx=20, pady=(15, 5))
+    
+      precio_entry = ctk.CTkEntry(
+         form_frame, 
+         textvariable=self.precio_producto_var,
+         height=35,
+         font=ctk.CTkFont(size=12),
+         placeholder_text="Ej: 1299.99"
+         ) 
+      precio_entry.pack(fill="x", padx=20, pady=(0, 10))
+
+    # Campo Cantidad
+      cantidad_label = ctk.CTkLabel(form_frame, text="Cantidad Inicial:", font=ctk.CTkFont(size=14))
+      cantidad_label.pack(anchor="w", padx=20, pady=(15, 5))
+    
+      cantidad_entry = ctk.CTkEntry(
+         form_frame, 
+         textvariable=self.cantidad_producto_var,
+         height=35,
+         font=ctk.CTkFont(size=12),
+         placeholder_text="Ej: 10"
+         )
+      cantidad_entry.pack(fill="x", padx=20, pady=(0, 10))
+
+    # Información adicional
+      info_frame = ctk.CTkFrame(form_frame)
+      info_frame.pack(fill="x", padx=20, pady=15)
+    
+      info_label = ctk.CTkLabel(
+         info_frame,
+         text="💡 Información: El producto se agregará al inventario con la cantidad especificada",
+         font=ctk.CTkFont(size=11),
+         text_color=("gray60", "gray40"),
+         wraplength=400
+         )
+      info_label.pack(pady=10)
+
+    # Frame para botones
+      buttons_frame = ctk.CTkFrame(main_frame)
+      buttons_frame.pack(fill="x", padx=20, pady=20)
+
+    # Botón Cancelar
+      btn_cancelar = ctk.CTkButton(
+         buttons_frame,
+         text="❌ Cancelar",
+         command=self.modal_producto.destroy,
+         height=40,
+         fg_color=("gray70", "gray30"),
+         hover_color=("gray60", "gray40")
+         )
+      btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
+
+    # Botón Guardar
+      btn_guardar = ctk.CTkButton(
+         buttons_frame,
+         text="💾 Guardar Producto",
+         command=self.guardar_producto,
+         height=40,
+         font=ctk.CTkFont(size=14, weight="bold")
+         )
+      btn_guardar.pack(side="right", padx=20, pady=15)
+    def guardar_producto(self):
+      """Validar y guardar el nuevo producto"""
+      from tkinter import messagebox
+    
+    # Obtener valores
+      nombre = self.nombre_producto_var.get().strip()
+      tipo = self.tipo_producto_var.get().strip()
+      precio_str = self.precio_producto_var.get().strip()
+      cantidad_str = self.cantidad_producto_var.get().strip()
+    
+    # Validaciones básicas
+      errores = []
+    
+      if not nombre:
+         errores.append("• El nombre del producto es obligatorio")
+      elif len(nombre) < 2:
+         errores.append("• El nombre debe tener al menos 2 caracteres")
+    
+      if not tipo:
+         errores.append("• Debe seleccionar una categoría")
+    
+    # Validar precio
+      precio = None
+      if not precio_str:
+         errores.append("• El precio es obligatorio")
+      else:
+          try:
+              precio = float(precio_str)
+              if precio <= 0:
+                 errores.append("• El precio debe ser mayor a 0")
+              elif precio > 999999:
+                 errores.append("• El precio no puede ser mayor a $999,999")
+          except ValueError:
+             errores.append("• El precio debe ser un número válido (ej: 99.99)")
+    
+    # Validar cantidad
+      cantidad = None
+      if not cantidad_str:
+         errores.append("• La cantidad es obligatoria")
+      else:
+          try:
+              cantidad = int(cantidad_str)
+              if cantidad < 0:
+                 errores.append("• La cantidad no puede ser negativa")
+              elif cantidad > 10000:
+                 errores.append("• La cantidad no puede ser mayor a 10,000")
+          except ValueError:
+            errores.append("• La cantidad debe ser un número entero")
+    
+    # Verificar si el producto ya existe usando el nuevo método
+      if nombre and hasattr(self, 'inventario'):
+          if self.inventario.existe_articulo(nombre):
+             errores.append(f"• Ya existe un producto con ese nombre: '{nombre}'")
+    
+    # Si hay errores, mostrarlos
+      if errores:
+         mensaje_error = "Por favor corrige los siguientes errores:\n\n" + "\n".join(errores)
+         messagebox.showerror("Errores de validación", mensaje_error)
+         return
+    
+    # Intentar agregar el producto
+      try:
+        
+        # Crear el nuevo artículo
+          nuevo_articulo = Articulo(nombre, tipo, precio, cantidad)
+        
+        # Agregar al inventario
+          print(f"DEBUG: Intentando agregar producto '{nombre}' al inventario")
+          resultado = self.inventario.agregar_articulo(nuevo_articulo)
+          print(f"DEBUG: Resultado de agregar_articulo: {resultado}")
+        
+          if resultado == True:
+              messagebox.showinfo(
+                  "Producto Agregado", 
+                  f"Producto '{nombre}' agregado exitosamente!\n\n"
+                  f"Categoría: {tipo}\n"
+                  f"Precio: ${precio:.2f}\n"
+                  f"Cantidad: {cantidad} unidades"
+                  )
+            
+            # Cerrar modal
+              self.modal_producto.destroy()
+            
+            # Actualizar la vista del inventario si está activa
+              self.actualizar_vista_inventario()
+            
+          elif resultado == False:
+             messagebox.showerror(
+                 "Error: Producto Duplicado", 
+                 f"El producto '{nombre}' ya existe en el inventario.\n\n"
+                 f"No se pueden tener productos con el mismo nombre."
+                )
+          else:
+             messagebox.showerror(
+                 "Error Desconocido", 
+                 f"Ocurrió un error inesperado al agregar el producto.\n"
+                 f"Valor devuelto: {resultado}"
+                )
+            
+      except Exception as e:
+         messagebox.showerror("Error", f"Error al agregar producto: {str(e)}")
+         print(f"Error detallado: {e}")
+    def actualizar_vista_inventario(self):
+      """Actualizar la vista del inventario después de agregar un producto"""
+      try:
+        # Si estamos en la vista de inventario, recargar los productos
+          if hasattr(self, 'productos_frame') and self.productos_frame.winfo_exists():
+             self.cargar_productos_en_interfaz()
+             print("Vista de inventario actualizada correctamente")
+          else:
+             print("No hay vista de inventario activa para actualizar")
+      except Exception as e:
+         print(f"Error al actualizar vista de inventario: {e}")     
+ 
     def editar_producto(self, articulo):
       """Editar un producto existente"""
       messagebox.showinfo("Editar Producto", f"Editando: {articulo.nombre}")
 
     def confirmar_eliminar_producto(self, nombre_producto):
-       """Confirmar eliminación de producto"""
-       if messagebox.askyesno("Confirmar Eliminación", 
-                          f"¿Estás seguro de eliminar '{nombre_producto}' del inventario?"):
-        # Aquí iría la lógica de eliminación
-         messagebox.showinfo("Producto Eliminado", f"'{nombre_producto}' ha sido eliminado del inventario")
-         self.cargar_productos_en_interfaz()  # Refrescar vista
+       
+      respuesta = messagebox.askyesno(
+         "Confirmar Eliminación",
+         f"¿Estás seguro de que deseas eliminar el producto?\n\n"
+         f"Producto: {nombre_producto}\n\n"
+         f"Esta acción eliminará todas las unidades del inventario\n"
+         f"y no se puede deshacer."
+         )
+    
+      if respuesta:
+          try:
+            # Eliminar del inventario
+              resultado = self.inventario.eliminar_articulo(nombre_producto)
+            
+              if resultado:
+                 messagebox.showinfo("Producto Eliminado", f"Producto '{nombre_producto}' eliminado exitosamente")
+                 self.actualizar_vista_inventario()  # Refrescar la vista
+              else:
+                 messagebox.showerror("Error", f"No se pudo eliminar el producto '{nombre_producto}'")
+                
+          except Exception as e:
+             messagebox.showerror("Error", f"Error al eliminar producto: {str(e)}")
+             print(f"Error detallado: {e}")
     
     def mostrar_nueva_compra(self):
         """Mostrar la interfaz para nueva compra"""

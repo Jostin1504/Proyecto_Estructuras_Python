@@ -15,13 +15,12 @@ class PilaArticulos:
     
     def __str__(self):
         return f" Articulos apilados: {len(self.items)}"
-#como todos los objetos de los articulos son iguales no hace falta moverlos
 
 class Nodo:
     def __init__(self, articulo):
         self.dato = articulo
         self.pila = PilaArticulos()  # Cada nodo tiene su propia pila de artículos
-                                     #copia los articulos en la pila por la cantidad ingresada
+        #copia los articulos en la pila por la cantidad ingresada
         for _ in range(articulo.cantidad):
             self.pila.apilar(articulo)
 
@@ -35,6 +34,14 @@ class ListaInventario:
         self.ultimo = None
 
     def agregar_articulo(self, articulo):
+        """
+        Agrega un artículo al inventario.
+        Retorna True si se agrega exitosamente, False si ya existe.
+        """
+        # Verificar si el artículo ya existe
+        if self.existe_articulo(articulo.nombre):
+            return False  # El artículo ya existe
+        
         nuevo_nodo = Nodo(articulo)
         if not self.primero:
             self.primero = nuevo_nodo
@@ -43,6 +50,20 @@ class ListaInventario:
             self.ultimo.siguiente = nuevo_nodo
             nuevo_nodo.anterior = self.ultimo
             self.ultimo = nuevo_nodo
+        
+        return True  # Artículo agregado exitosamente
+
+    def existe_articulo(self, nombre):
+        """
+        Verifica si un artículo ya existe en el inventario.
+        Retorna True si existe, False si no existe.
+        """
+        actual = self.primero
+        while actual:
+            if actual.dato.nombre.lower().strip() == nombre.lower().strip():
+                return True
+            actual = actual.siguiente
+        return False
 
     #Clase basica para mostrar que es doble:
     def mostrar_articulos(self):
@@ -123,24 +144,47 @@ class ListaInventario:
         return None
     
     #este metodo esta hecho para que solo elimine despues de completar con exito la compra
-    def eliminar_articulo(self, nombre, cantidad):
+    def eliminar_articulo(self, nombre, cantidad=None):
+        """
+        Elimina un artículo del inventario.
+        Si no se especifica cantidad, elimina el nodo completo.
+        Si se especifica cantidad, elimina esa cantidad de la pila.
+        Retorna True si se elimina exitosamente, False si no se encuentra.
+        """
         actual = self.primero
         while actual:
-            if actual.dato.nombre.lower() == nombre.lower():
-                for _ in range(cantidad):
-                    actual.pila.desapilar()
-                if not actual.pila.items:
-                    # Si la pila esta vacia se vuela el nodo
+            if actual.dato.nombre.lower().strip() == nombre.lower().strip():
+                if cantidad is None:
+                    # Eliminar nodo completo
                     if actual.anterior:
                         actual.anterior.siguiente = actual.siguiente
-
                     else:
                         self.primero = actual.siguiente
+                    
                     if actual.siguiente:
                         actual.siguiente.anterior = actual.anterior
                     else:
                         self.ultimo = actual.anterior
-                return True
+                    
+                    return True
+                else:
+                    # Eliminar cantidad específica
+                    for _ in range(min(cantidad, len(actual.pila.items))):
+                        actual.pila.desapilar()
+                    
+                    if not actual.pila.items:
+                        # Si la pila está vacía, eliminar el nodo
+                        if actual.anterior:
+                            actual.anterior.siguiente = actual.siguiente
+                        else:
+                            self.primero = actual.siguiente
+                        
+                        if actual.siguiente:
+                            actual.siguiente.anterior = actual.anterior
+                        else:
+                            self.ultimo = actual.anterior
+                    
+                    return True
             actual = actual.siguiente
         return False
     
@@ -151,19 +195,19 @@ class ListaInventario:
             return False
         else:
             while actual:
-              if actual.dato.nombre.lower() == nombre.lower():
+                if actual.dato.nombre.lower() == nombre.lower():
                     actual.pila.desapilar()
                     if not actual.pila.items:
                         if actual.anterior:
-                          actual.anterior.siguiente = actual.siguiente
+                            actual.anterior.siguiente = actual.siguiente
                         else:
-                          self.primero = actual.siguiente
+                            self.primero = actual.siguiente
                         if actual.siguiente:
-                          actual.siguiente.anterior = actual.anterior
+                            actual.siguiente.anterior = actual.anterior
                         else:
-                          self.ultimo = actual.anterior
+                            self.ultimo = actual.anterior
                     return True
-            actual = actual.siguiente
+                actual = actual.siguiente
         return False
 
     #Este metodo comprueba la cantidad de la pila para evitar que el usuario 
@@ -174,5 +218,4 @@ class ListaInventario:
             if actual.dato.nombre.lower() == nombre.lower():
                 return len(actual.pila.items) >= cantidad
             actual = actual.siguiente
-        return False 
-        
+        return False
