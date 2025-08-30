@@ -1913,12 +1913,7 @@ class SistemaCompraModerno:
 
     # Validaciones
       errores = []
-      #Verificar si el cliente existe
-      cliente_existe = any(c.id_cliente == cliente.id_cliente for c in self.gestion_clientes.clientes)
-      if not cliente_existe:
-          errores.append("• Error: El cliente no existe en el sistema")
-          print(f"DEBUG: Buscando cliente con ID: {cliente.id_cliente}")
-          print(f"DEBUG: Clientes disponibles: {[c.id_cliente for c in self.gestion_clientes.clientes]}")
+      
       if not numero or not numero.isdigit():
          errores.append("• El número de tarjeta debe contener solo dígitos")
       elif len(numero) not in [15, 16]:
