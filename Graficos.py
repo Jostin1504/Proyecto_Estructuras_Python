@@ -2007,12 +2007,6 @@ class SistemaCompraModerno:
           except Exception as e:
              messagebox.showerror("Error", f"Error al eliminar tarjeta: {str(e)}")
 
-
-# ===== MODIFICACIÓN PARA AGREGAR BOTÓN DE TARJETAS EN actualizar_lista_clientes() =====
-
-# En la parte donde creas los botones de acción, agregar:
-
-# Botón Gestionar Tarjetas (nuevo)
       
     
     def salir_aplicacion(self):
