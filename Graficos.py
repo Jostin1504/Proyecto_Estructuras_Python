@@ -731,854 +731,954 @@ class SistemaCompraModerno:
     def mostrar_nueva_compra(self):
         """Mostrar la interfaz para nueva compra"""
         self.limpiar_contenido()
-        
+
         title_label = ctk.CTkLabel(
             self.content_frame,
             text="🛍️ Nueva Compra",
             font=ctk.CTkFont(size=24, weight="bold")
         )
         title_label.pack(pady=20)
+
         compra_frame = ctk.CTkFrame(self.content_frame)
         compra_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        placeholder = ctk.CTkLabel(
+
+        # Selección de cliente
+        cliente_label = ctk.CTkLabel(compra_frame, text="Selecciona un cliente:", font=ctk.CTkFont(size=16))
+        cliente_label.pack(pady=10)
+        clientes_nombres = [f"{c.nombre} {c.apellido} ({c.id_cliente})" for c in self.gestion_clientes.clientes]
+        self.cliente_compra_var = ctk.StringVar(value=clientes_nombres[0] if clientes_nombres else "")
+        cliente_menu = ctk.CTkOptionMenu(compra_frame, values=clientes_nombres, variable=self.cliente_compra_var)
+        cliente_menu.pack(pady=5)
+
+        # Lista de productos con cantidad
+        productos_label = ctk.CTkLabel(compra_frame, text="Selecciona productos y cantidad:", font=ctk.CTkFont(size=16))
+        productos_label.pack(pady=10)
+        productos_nodos = self.inventario.pasar_a_lista_nodos(self.inventario)
+        self.productos_vars = []
+        productos_frame = ctk.CTkFrame(compra_frame)
+        productos_frame.pack(pady=10)
+        for nodo in productos_nodos:
+            var = ctk.IntVar(value=0)
+            cantidad_var = ctk.StringVar(value="1")
+            articulo = nodo.dato
+            fila = ctk.CTkFrame(productos_frame)
+            fila.pack(fill="x", pady=2)
+            ctk.CTkCheckBox(fila, text=f"{articulo.nombre} (${articulo.precio:.2f})", variable=var).pack(side="left", padx=5)
+            ctk.CTkLabel(fila, text="Cantidad:").pack(side="left", padx=5)
+            ctk.CTkEntry(fila, textvariable=cantidad_var, width=50).pack(side="left", padx=5)
+            self.productos_vars.append((var, cantidad_var, articulo, nodo))
+
+        # Botón para agregar al carrito
+        btn_agregar = ctk.CTkButton(
             compra_frame,
-            text="Módulo de compra en construcción...",
-            font=ctk.CTkFont(size=16)
+            text="Agregar al carrito",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            command=self.agregar_seleccion_a_carrito
         )
-        placeholder.pack(pady=100)
-    
-    def mostrar_gestion_tarjetas(self):
-        """Mostrar gestión de tarjetas"""
-        self.limpiar_contenido()
-        
-        title_label = ctk.CTkLabel(
-            self.content_frame,
-            text="💳 Gestión de Tarjetas",
-            font=ctk.CTkFont(size=24, weight="bold")
+        btn_agregar.pack(pady=20)
+
+        # Frame para mostrar el carrito
+        self.carrito_frame = ctk.CTkFrame(compra_frame)
+        self.carrito_frame.pack(fill="x", pady=10)
+        self.carrito_label = ctk.CTkLabel(self.carrito_frame, text="Carrito vacío", font=ctk.CTkFont(size=14))
+        self.carrito_label.pack(pady=10)
+
+        # Botón para procesar pago
+        btn_pagar = ctk.CTkButton(
+            compra_frame,
+            text="Procesar Pago",
+            font=ctk.CTkFont(size=14, weight="bold"),
+            command=self.procesar_pago
         )
-        title_label.pack(pady=20)
-        
-        tarjetas_frame = ctk.CTkFrame(self.content_frame)
-        tarjetas_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        placeholder = ctk.CTkLabel(
-            tarjetas_frame,
-            text="Módulo de tarjetas en construcción...",
-            font=ctk.CTkFont(size=16)
-        )
-        placeholder.pack(pady=100)
-    
-    def mostrar_reportes(self):
-        """Mostrar reportes del sistema"""
-        self.limpiar_contenido()
-        
-        title_label = ctk.CTkLabel(
-            self.content_frame,
-            text="📊 Reportes del Sistema",
-            font=ctk.CTkFont(size=24, weight="bold")
-        )
-        title_label.pack(pady=20)
-        
-        reportes_frame = ctk.CTkFrame(self.content_frame)
-        reportes_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        placeholder = ctk.CTkLabel(
-            reportes_frame,
-            text="Módulo de reportes en construcción...",
-            font=ctk.CTkFont(size=16)
-        )
-        placeholder.pack(pady=100)
-    
-    def mostrar_configuracion(self):
-        """Mostrar configuración del sistema"""
-        self.limpiar_contenido()
-        
-        title_label = ctk.CTkLabel(
-            self.content_frame,
-            text="⚙️ Configuración del Sistema",
-            font=ctk.CTkFont(size=24, weight="bold")
-        )
-        title_label.pack(pady=20)
-        
-        config_frame = ctk.CTkFrame(self.content_frame)
-        config_frame.pack(fill="both", expand=True, padx=20, pady=10)
-        
-        
-        theme_label = ctk.CTkLabel(config_frame, text="Tema de la aplicación:", font=ctk.CTkFont(size=14))
-        theme_label.pack(pady=10)
-        
-        theme_var = ctk.StringVar(value="light")
-        theme_menu = ctk.CTkOptionMenu(
-            config_frame,
-            values=["light", "dark"],
-            variable=theme_var,
-            command=self.cambiar_tema
-        )
-        theme_menu.pack(pady=5)
-    
-    def cambiar_tema(self, nuevo_tema):
-        """Cambiar el tema de la aplicación"""
-        ctk.set_appearance_mode(nuevo_tema)
-    
-    def nuevo_cliente(self):
-        self.modal_cliente = ctk.CTkToplevel(self.root)
-        self.modal_cliente.title("➕ Nuevo Cliente")
-        self.modal_cliente.geometry("500x600")
-        self.modal_cliente.transient(self.root)
-        self.modal_cliente.grab_set()
-    
-     # Centrar la ventana modal
-        self.modal_cliente.update_idletasks()
-        x = (self.modal_cliente.winfo_screenwidth() // 2) - (250)
-        y = (self.modal_cliente.winfo_screenheight() // 2) - (300)
-        self.modal_cliente.geometry(f"500x600+{x}+{y}")
-    
-     # Frame principal
-        main_frame = ctk.CTkFrame(self.modal_cliente)
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-    
-     # Título
-        title_label = ctk.CTkLabel(
-        main_frame,
-        text="Registrar Nuevo Cliente",
-        font=ctk.CTkFont(size=20, weight="bold")
-        )
-        title_label.pack(pady=(10, 30))
-    
-     # Frame para el formulario
-        form_frame = ctk.CTkFrame(main_frame)
-        form_frame.pack(fill="x", padx=22, pady=17)
-    
-     # Variables para los campos
-        self.nombre_var = ctk.StringVar()
-        self.apellido_var = ctk.StringVar()
-        self.telefono_var = ctk.StringVar()
-        self.correo_var = ctk.StringVar()
-        self.direccion_var = ctk.StringVar()
-        self.id_cliente_var = ctk.StringVar()
-        self.fecha_registro_var=ctk.StringVar()
-        self.password_var=ctk.StringVar()
-     # Campos del formulario
-        fields=[
-            ("Nombre:", self.nombre_var),
-            ("Apellido:", self.apellido_var),
-            ("Teléfono:", self.telefono_var),
-            ("Correo:", self.correo_var),
-            ("Dirección:", self.direccion_var),
-            ("ID Cliente:", self.id_cliente_var),
-            ("Fecha de Registro",self.fecha_registro_var),
-            ("Contraseña",self.password_var)
-        ]
-    
-     # Crear los campos
-        for i, (label_text, var) in enumerate(fields):
-        # Label
-            label = ctk.CTkLabel(form_frame, text=label_text, font=ctk.CTkFont(size=14))
-            label.pack(anchor="w", padx=20, pady=(15, 5))
-        
-        # Entry
-            entry = ctk.CTkEntry(
-                form_frame, 
-                textvariable=var,
-                height=35,
-                font=ctk.CTkFont(size=12)
-            )
-            entry.pack(fill="x", padx=20, pady=(0, 10))
-        
-        # Si es el primer campo, darle foco
-            if i == 0:
-                entry.focus()
-    
-     # Frame para botones
-        buttons_frame = ctk.CTkFrame(main_frame)
-        buttons_frame.pack(fill="x", padx=20, pady=20)
-    
-     # Botón Cancelar
-        btn_cancelar = ctk.CTkButton(
-          buttons_frame,
-          text="❌ Cancelar",
-          command=self.modal_cliente.destroy,
-          height=40,
-          fg_color=("gray70", "gray30"),
-          hover_color=("gray60", "gray40")
-           )
-        btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
-    
-    # Botón Guardar
-        btn_guardar = ctk.CTkButton(
-          buttons_frame,
-          text="💾 Guardar Cliente",
-          command=self.guardar_cliente,
-          height=40,
-          font=ctk.CTkFont(size=14, weight="bold")
-          )
-        btn_guardar.pack(side="right", padx=20, pady=15)
+        btn_pagar.pack(pady=10)
 
-    def guardar_cliente(self):
-      """Validar y guardar el nuevo cliente"""
-    
-    # Obtener valores
-      nombre = self.nombre_var.get().strip()
-      apellido = self.apellido_var.get().strip()
-      telefono = self.telefono_var.get().strip()
-      correo = self.correo_var.get().strip()
-      direccion = self.direccion_var.get().strip()
-      id_cliente = self.id_cliente_var.get().strip()
-      fecha_registro=self.fecha_registro_var.get().strip()
-      password=self.password_var.get().strip()
-    
-    # Validaciones básicas
-      errores = []
-    
-      if not nombre:
-        errores.append("• El nombre es obligatorio")
-    
-      if not apellido:
-        errores.append("• El apellido es obligatorio")
-        
-      if not telefono:
-        errores.append("• El teléfono es obligatorio")
-      elif not telefono.isdigit() or len(telefono) < 8:
-        errores.append("• El teléfono debe tener al menos 8 dígitos")
-    
-      if not correo:
-        errores.append("• El correo es obligatorio")
-      elif "@" not in correo or "." not in correo.split("@")[-1]:
-        errores.append("• El formato del correo no es válido")
-    
-      if not direccion:
-        errores.append("• La dirección es obligatoria")
-        
-      if not id_cliente:
-        errores.append("• El ID del cliente es obligatorio")
-    
-    # Si hay errores, mostrarlos
-      if errores:
-        mensaje_error = "Por favor corrige los siguientes errores:\n\n" + "\n".join(errores)
-        messagebox.showerror("Errores de validación", mensaje_error)
-        return
-    
-    # Intentar registrar el cliente
-      try:
-        # Crear objeto cliente con fecha actual
-         from Fechas import Tiempo
-         fecha_registro = Tiempo.Ahora()
-
-        
-        # Intentar registrar en el sistema
-         if self.gestion_clientes.registrar_cliente(nombre,id_cliente,password,apellido, telefono, correo,direccion,fecha_registro):
-            messagebox.showinfo(
-                "Cliente Registrado", 
-                f"Cliente {nombre} {apellido} registrado exitosamente!\nID: {id_cliente}"
-            )
-            
-            # Cerrar modal
-            self.modal_cliente.destroy()
-            
-            # Actualizar la vista de clientes si está activa
-            self.actualizar_lista_clientes()
-            
-         else:
-            messagebox.showerror(
-                "Error de Registro", 
-                f"Ya existe un cliente con el ID: {id_cliente}\nPor favor usa un ID diferente."
-            )
-            
-      except Exception as e:
-        messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
-    def mostrar_gestion_clientes(self):
-      """Mostrar la interfaz de gestión de clientes"""
-    # Limpiar el contenido actual
-      self.limpiar_contenido()
-    
-    # Título principal
-      title_label = ctk.CTkLabel(
-        self.content_frame,
-        text="👥 Gestión de Clientes",
-        font=ctk.CTkFont(size=24, weight="bold")
-       )
-      title_label.pack(pady=20)
-    
-    # Frame principal para clientes
-      clientes_frame = ctk.CTkFrame(self.content_frame)
-      clientes_frame.pack(fill="both", expand=True, padx=20, pady=10)
-    
-    # Frame para botones superiores (más completo que el primero)
-      buttons_frame = ctk.CTkFrame(clientes_frame)
-      buttons_frame.pack(fill="x", padx=20, pady=10)
-    
-    # Botón Nuevo Cliente
-      btn_nuevo = ctk.CTkButton(
-         buttons_frame,
-         text="➕ Nuevo Cliente",
-         command=self.nuevo_cliente,
-         height=40,
-         font=ctk.CTkFont(size=14, weight="bold")
-         )
-      btn_nuevo.pack(side="left", padx=20, pady=15)
-    
-    # Botón Buscar Cliente
-      btn_buscar = ctk.CTkButton(
-         buttons_frame,
-         text="🔍 Buscar Cliente",
-         command=self.buscar_cliente,
-         height=40
-          )
-      btn_buscar.pack(side="left", padx=10, pady=15)
-    
-    # Botón Actualizar Lista (funcionalidad del segundo método)
-      btn_actualizar = ctk.CTkButton(
-         buttons_frame,
-         text="🔄 Actualizar",
-         command=self.actualizar_lista_clientes,
-         height=40,
-         fg_color=("gray70", "gray30"),
-         hover_color=("gray60", "gray40")
-         )
-      btn_actualizar.pack(side="right", padx=20, pady=15)
-    
-    # Título de la lista
-      list_title = ctk.CTkLabel(
-        clientes_frame,
-        text="Lista de Clientes",
-        font=ctk.CTkFont(size=16, weight="bold")
-         )
-      list_title.pack(pady=(20, 10))
-    
-    # Frame scrollable para la lista de clientes
-      self.lista_frame = ctk.CTkScrollableFrame(clientes_frame, height=400)
-      self.lista_frame.pack(fill="both", expand=True, padx=20, pady=10)
-    
-    # Cargar la lista inicial de clientes
-      self.actualizar_lista_clientes()
-
-    def actualizar_lista_clientes(self):
-      """Actualizar la lista visual de clientes"""
-    # Verificar que lista_frame existe
-      if not hasattr(self, 'lista_frame'):
-        return
-    
-    # Limpiar la lista actual
-      for widget in self.lista_frame.winfo_children():
-         widget.destroy()
-
-    # Verificar si hay clientes registrados
-      if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
-        # Mostrar mensaje cuando no hay clientes
-          placeholder = ctk.CTkLabel(
-            self.lista_frame,
-            text="No hay clientes registrados. Haz clic en 'Nuevo Cliente' para comenzar.",
-            font=ctk.CTkFont(size=14),
-            text_color=("gray60", "gray40")
-            )
-          placeholder.pack(pady=50)
-          return
-
-    # Headers de la tabla
-      headers_frame = ctk.CTkFrame(self.lista_frame)
-      headers_frame.pack(fill="x", padx=10, pady=(5, 15))
-
-      headers = ["ID Cliente", "Nombre", "Apellido", "Teléfono", "Correo", "Fecha Registro", "Acciones"]
-      header_widths = [100, 120, 120, 100, 180, 120, 120]
-
-      for i, (header, width) in enumerate(zip(headers, header_widths)):
-          header_label = ctk.CTkLabel(
-             headers_frame,
-             text=header,
-             font=ctk.CTkFont(size=12, weight="bold"),
-             width=width
-             )
-          header_label.grid(row=0, column=i, padx=5, pady=10, sticky="w")
-
-    # Mostrar cada cliente
-      for i, cliente in enumerate(self.gestion_clientes.clientes):
-         # Frame para cada cliente
-         cliente_frame = ctk.CTkFrame(self.lista_frame)
-         cliente_frame.pack(fill="x", padx=10, pady=2)
-        
-        # Datos del cliente
-         datos = [
-            getattr(cliente, 'id_cliente', 'N/A'),
-            getattr(cliente, 'nombre', 'N/A'),
-            getattr(cliente, 'apellido', 'N/A'),
-            getattr(cliente, 'telefono', 'N/A'),
-            getattr(cliente, 'correo', 'N/A'),
-            str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
-           ]
-        
-        # Mostrar datos en columnas
-         for j, (dato, width) in enumerate(zip(datos, header_widths[:-1])):
-            dato_label = ctk.CTkLabel(
-                cliente_frame,
-                text=str(dato),
-                font=ctk.CTkFont(size=11),
-                width=width,
-                anchor="w"
-              )
-            dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
-        
-        # Botones de acción
-         acciones_frame = ctk.CTkFrame(cliente_frame)
-         acciones_frame.grid(row=0, column=len(datos), padx=5, pady=5)
-        
-        # Botón Ver/Editar
-         btn_ver = ctk.CTkButton(
-            acciones_frame,
-            text="👁️",
-            width=30,
-            height=25,
-            command=lambda c=cliente: self.ver_cliente(c),
-            font=ctk.CTkFont(size=12)
-            )
-         btn_ver.pack(side="left", padx=2)
-        
-        # Botón Eliminar
-         btn_eliminar = ctk.CTkButton(
-            acciones_frame,
-            text="🗑️",
-            width=30,
-            height=25,
-            fg_color=("red", "darkred"),
-            hover_color=("darkred", "red"),
-            command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
-            font=ctk.CTkFont(size=12)
-           )
-         btn_eliminar.pack(side="left", padx=2)
-
-    # Contador total de clientes
-      total_label = ctk.CTkLabel(
-         self.lista_frame,
-         text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
-         font=ctk.CTkFont(size=12, weight="bold")
-         )
-      total_label.pack(pady=10)
-
-# Método auxiliar para asegurar que limpiar_contenido existe
-    def limpiar_contenido(self):
-      """Limpiar el contenido del frame principal"""
-      if hasattr(self, 'content_frame'):
-         for widget in self.content_frame.winfo_children():
-             widget.destroy()
-      else:
-        # Si content_frame no existe, créarlo
-         self.content_frame = ctk.CTkFrame(self.root)
-         self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
-    def ver_cliente(self, cliente):
-      """Mostrar detalles del cliente"""
-      from tkinter import messagebox
-    
-      info = f"""
-        ID Cliente: {cliente.id_cliente}
-        Nombre: {cliente.nombre} {cliente.apellido}
-        Teléfono: {cliente.telefono}
-        Correo: {cliente.correo}
-        Dirección: {cliente.direccion_envio}
-        Fecha Registro: {cliente.fecha_registro}
-        """
-    
-      messagebox.showinfo(f"Cliente: {cliente.nombre}", info)
-
-    def confirmar_eliminar_cliente(self, cliente):
-     """Confirmar eliminación de cliente"""
-     from tkinter import messagebox
-    
-     respuesta = messagebox.askyesno(
-        "Confirmar Eliminación",
-        f"¿Estás seguro de que deseas eliminar al cliente?\n\n"
-        f"Nombre: {cliente.nombre} {cliente.apellido}\n"
-        f"ID: {cliente.id_cliente}\n\n"
-        f"Esta acción no se puede deshacer."
-        )
-    
-     if respuesta:
-        
-        if cliente in self.gestion_clientes.clientes:
-            self.gestion_clientes.clientes.remove(cliente)
-            self.gestion_clientes.guardar_clientes()
-            messagebox.showinfo("Cliente Eliminado", f"Cliente {cliente.nombre} eliminado exitosamente")
-            self.actualizar_lista_clientes()  # Refrescar la lista
-    def buscar_cliente(self):
-      """Abrir diálogo para buscar cliente"""
-    # Verificar si ya hay una ventana de búsqueda abierta
-      if hasattr(self, 'modal_busqueda') and self.modal_busqueda.winfo_exists():
-        self.modal_busqueda.lift()  # Traer al frente
-        self.modal_busqueda.focus()
-        return
-
-    # Crear ventana modal para búsqueda
-      self.modal_busqueda = ctk.CTkToplevel(self.root)
-      self.modal_busqueda.title("🔍 Buscar Cliente")
-      self.modal_busqueda.geometry("700x500")
-      self.modal_busqueda.transient(self.root)
-      self.modal_busqueda.grab_set()
-
-    # Centrar la ventana modal
-      self.modal_busqueda.update_idletasks()
-      x = (self.modal_busqueda.winfo_screenwidth() // 2) - (350)
-      y = (self.modal_busqueda.winfo_screenheight() // 2) - (250)
-      self.modal_busqueda.geometry(f"700x500+{x}+{y}")
-
-    # Limpiar variables previas de búsqueda
-      self.limpiar_variables_busqueda()
-
-    # Frame principal
-      main_frame = ctk.CTkFrame(self.modal_busqueda)
-      main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-    # Título
-      title_label = ctk.CTkLabel(
-         main_frame,
-         text="Buscar Cliente",
-         font=ctk.CTkFont(size=20, weight="bold")
-         )
-      title_label.pack(pady=(10, 20))
-
-    # Frame para búsqueda
-      search_frame = ctk.CTkFrame(main_frame)
-      search_frame.pack(fill="x", padx=20, pady=10)
-
-    # Inicializar variables ANTES de crear la interfaz
-      self.busqueda_var = ctk.StringVar()
-      self.filtro_activo = ctk.BooleanVar(value=True)
-      self.tipo_busqueda = ctk.StringVar(value="Todos los campos")
-
-    # Campo de búsqueda
-      search_label = ctk.CTkLabel(
-         search_frame, 
-         text="Buscar por nombre, apellido, ID o correo:",
-         font=ctk.CTkFont(size=14)
-         )
-      search_label.pack(anchor="w", padx=20, pady=(15, 5))
-
-      self.entry_busqueda = ctk.CTkEntry(
-         search_frame,
-         textvariable=self.busqueda_var,
-         height=35,
-         font=ctk.CTkFont(size=12),
-         placeholder_text="Escribe para buscar... (ej: Jose)"
-         )
-      self.entry_busqueda.pack(fill="x", padx=20, pady=(0, 15))
-
-    # Frame para opciones de búsqueda
-      options_frame = ctk.CTkFrame(search_frame)
-      options_frame.pack(fill="x", padx=20, pady=(0, 15))
-
-    # Checkbox para mostrar solo activos
-      checkbox_activos = ctk.CTkCheckBox(
-         options_frame,
-         text="Solo clientes activos",
-         variable=self.filtro_activo
-         )
-      checkbox_activos.pack(side="left", padx=20, pady=10)
-
-    # Selector de tipo de búsqueda
-      tipo_label = ctk.CTkLabel(options_frame, text="Buscar en:")
-      tipo_label.pack(side="left", padx=(40, 10), pady=10)
-
-  
-      tipo_menu = ctk.CTkOptionMenu(
-         options_frame,
-         values=["Todos los campos", "Solo nombre", "Solo ID", "Solo correo"],
-         variable=self.tipo_busqueda
-         )
-      tipo_menu.pack(side="left", padx=10, pady=10)
-
-    # Botones de acción 
-      buttons_frame = ctk.CTkFrame(search_frame)
-      buttons_frame.pack(fill="x", padx=20, pady=(0, 15))
-     
-      btn_buscar_manual = ctk.CTkButton(
-         buttons_frame,
-         text="🔍 Buscar",
-         command=self.ejecutar_busqueda,
-         height=35,
-         font=ctk.CTkFont(size=12, weight="bold")
-         )
-      btn_buscar_manual.pack(side="left", padx=20, pady=10)
-
-      btn_limpiar = ctk.CTkButton(
-         buttons_frame,
-         text="🗑️ Limpiar",
-         command=self.limpiar_busqueda,
-         height=35,
-         width=100,
-         fg_color=("gray70", "gray30")
-         )
-      btn_limpiar.pack(side="left", padx=10, pady=10)
-
-      btn_mostrar_todos = ctk.CTkButton(
-         buttons_frame,
-         text="👥 Mostrar Todos",
-         command=self.mostrar_todos_en_busqueda,
-         height=35,
-         width=120,
-         fg_color=("green", "darkgreen")
-         )
-      btn_mostrar_todos.pack(side="left", padx=10, pady=10)
-
-    # Frame para resultados
-      results_label = ctk.CTkLabel(
-         main_frame,
-         text="Resultados de la búsqueda:",
-         font=ctk.CTkFont(size=16, weight="bold")
-         )
-      results_label.pack(pady=(20, 10))
-
-    # Frame scrollable para resultados - CREAR SIEMPRE
-      self.resultados_frame = ctk.CTkScrollableFrame(main_frame, height=250)
-      self.resultados_frame.pack(fill="both", expand=True, padx=20, pady=10)
-
-    # Frame para botones inferiores
-      bottom_buttons = ctk.CTkFrame(main_frame)
-      bottom_buttons.pack(fill="x", padx=20, pady=10)
-
-      btn_cerrar = ctk.CTkButton(
-         bottom_buttons,
-         text="❌ Cerrar",
-         command=self.cerrar_busqueda,
-         height=35,
-         fg_color=("gray70", "gray30")
-         )
-      btn_cerrar.pack(side="right", padx=20, pady=10)
-
-    # Inicializar con pantalla vacía - NO mostrar todos automáticamente
-      self.mostrar_mensaje_inicial()
-
-    # Configurar el evento de entrada DESPUÉS de crear todo
-      self.entry_busqueda.bind('<KeyRelease>', self.on_busqueda_keyrelease)
-      self.entry_busqueda.focus()
-    def limpiar_variables_busqueda(self):
-      """Limpiar variables de búsqueda previas"""
-      if hasattr(self, 'busqueda_var'):
-         del self.busqueda_var
-      if hasattr(self, 'filtro_activo'):
-         del self.filtro_activo
-      if hasattr(self, 'tipo_busqueda'):
-         del self.tipo_busqueda
-      if hasattr(self, 'resultados_frame'):
-         del self.resultados_frame
-    def mostrar_mensaje_inicial(self):
-      """Mostrar mensaje inicial en lugar de todos los clientes"""
-    # Limpiar resultados
-      for widget in self.resultados_frame.winfo_children():
-         widget.destroy()
-    
-    # Mostrar mensaje inicial
-      mensaje_inicial = ctk.CTkLabel(
-         self.resultados_frame,
-         text="Escribe en el campo de búsqueda para encontrar clientes.\n\nO haz clic en 'Mostrar Todos' para ver todos los clientes registrados.",
-         font=ctk.CTkFont(size=14),
-         text_color=("gray60", "gray40")
-         )
-      mensaje_inicial.pack(pady=50)     
-    def on_busqueda_keyrelease(self, event):
-      """Manejar evento cuando se escribe en el campo de búsqueda"""
-    # Solo buscar si hay texto
-      if self.busqueda_var.get().strip():
-          self.ejecutar_busqueda()  
-    def ejecutar_busqueda(self):
-      """Ejecutar la búsqueda de clientes"""
-      try:
-        # Verificar que resultados_frame existe
-        if not hasattr(self, 'resultados_frame') or not self.resultados_frame.winfo_exists():
-            print("Error: resultados_frame no existe")
+    def agregar_seleccion_a_carrito(self):
+        """Agregar productos seleccionados al carrito"""
+        # Obtener cliente
+        cliente_id = self.cliente_compra_var.get().split("(")[-1].replace(")", "").strip()
+        cliente = next((c for c in self.gestion_clientes.clientes if c.id_cliente == cliente_id), None)
+        if not cliente:
+            self.carrito_label.configure(text="Selecciona un cliente válido.")
             return
 
-        # Limpiar resultados anteriores
+        # Crear carrito si no existe o si cambió el cliente
+        if self.carrito is None or self.carrito.cliente.id_cliente != cliente.id_cliente:
+            self.carrito = CarroDeCompra(cliente)
+        else:
+            self.carrito.vaciar_carrito()
+
+        # Agregar productos seleccionados
+        for var, cantidad_var, articulo, nodo in self.productos_vars:
+            if var.get() == 1:
+                try:
+                    cantidad = int(cantidad_var.get())
+                    if cantidad < 1:
+                        continue
+                    stock = len(nodo.pila.items)
+                    if cantidad > stock:
+                        continue
+                    self.carrito.agregar_item(
+                        id_producto=articulo.nombre,
+                        nombre=articulo.nombre,
+                        cantidad=cantidad,
+                        precio_unitario=articulo.precio
+                    )
+                except Exception:
+                    continue
+
+        self.actualizar_carrito_vista()
+
+    def actualizar_carrito_vista(self):
+        """Actualizar la vista del carrito"""
+        for widget in self.carrito_frame.winfo_children():
+            widget.destroy()
+        if self.carrito and self.carrito.items:
+            texto = "Carrito:\n"
+            for item in self.carrito.items:
+                texto += f"- {item['nombre']} x{item['cantidad']} = ${item['subtotal']:.2f}\n"
+            texto += f"\nTotal: ${self.carrito.calcular_total():.2f}"
+            self.carrito_label = ctk.CTkLabel(self.carrito_frame, text=texto, font=ctk.CTkFont(size=14))
+            self.carrito_label.pack(pady=10)
+        else:
+            self.carrito_label = ctk.CTkLabel(self.carrito_frame, text="Carrito vacío", font=ctk.CTkFont(size=14))
+            self.carrito_label.pack(pady=10)
+
+    def procesar_pago(self):
+        """Procesar el pago del carrito actual"""
+        if not self.carrito or not self.carrito.items:
+            messagebox.showinfo("Pago", "El carrito está vacío.")
+            return
+        ProcesarPago(self.carrito).procesar_pago()
+        # Eliminar productos del inventario
+        for item in self.carrito.items:
+            nodo = next((n for n in self.inventario.pasar_a_lista_nodos(self.inventario) if n.dato.nombre == item["nombre"]), None)
+            if nodo:
+                for _ in range(item["cantidad"]):
+                    if nodo.pila.items:
+                        nodo.pila.items.pop()
+        messagebox.showinfo("Pago", "Pago procesado con éxito")
+        self.carrito = None
+        self.actualizar_carrito_vista()
+        self.cargar_productos_en_interfaz()  # Actualiza inventario en la interfaz
+            
+    def mostrar_gestion_tarjetas(self):
+                """Mostrar gestión de tarjetas"""
+                self.limpiar_contenido()
+                
+                title_label = ctk.CTkLabel(
+                    self.content_frame,
+                    text="💳 Gestión de Tarjetas",
+                    font=ctk.CTkFont(size=24, weight="bold")
+                )
+                title_label.pack(pady=20)
+                
+                tarjetas_frame = ctk.CTkFrame(self.content_frame)
+                tarjetas_frame.pack(fill="both", expand=True, padx=20, pady=10)
+                
+                placeholder = ctk.CTkLabel(
+                    tarjetas_frame,
+                    text="Módulo de tarjetas en construcción...",
+                    font=ctk.CTkFont(size=16)
+                )
+                placeholder.pack(pady=100)
+        
+    def mostrar_reportes(self):
+            """Mostrar reportes del sistema"""
+            self.limpiar_contenido()
+            
+            title_label = ctk.CTkLabel(
+                self.content_frame,
+                text="📊 Reportes del Sistema",
+                font=ctk.CTkFont(size=24, weight="bold")
+            )
+            title_label.pack(pady=20)
+            
+            reportes_frame = ctk.CTkFrame(self.content_frame)
+            reportes_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            placeholder = ctk.CTkLabel(
+                reportes_frame,
+                text="Módulo de reportes en construcción...",
+                font=ctk.CTkFont(size=16)
+            )
+            placeholder.pack(pady=100)
+        
+    def mostrar_configuracion(self):
+            """Mostrar configuración del sistema"""
+            self.limpiar_contenido()
+            
+            title_label = ctk.CTkLabel(
+                self.content_frame,
+                text="⚙️ Configuración del Sistema",
+                font=ctk.CTkFont(size=24, weight="bold")
+            )
+            title_label.pack(pady=20)
+            
+            config_frame = ctk.CTkFrame(self.content_frame)
+            config_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            
+            theme_label = ctk.CTkLabel(config_frame, text="Tema de la aplicación:", font=ctk.CTkFont(size=14))
+            theme_label.pack(pady=10)
+            
+            theme_var = ctk.StringVar(value="light")
+            theme_menu = ctk.CTkOptionMenu(
+                config_frame,
+                values=["light", "dark"],
+                variable=theme_var,
+                command=self.cambiar_tema
+            )
+            theme_menu.pack(pady=5)
+        
+    def cambiar_tema(self, nuevo_tema):
+            """Cambiar el tema de la aplicación"""
+            ctk.set_appearance_mode(nuevo_tema)
+        
+    def nuevo_cliente(self):
+            self.modal_cliente = ctk.CTkToplevel(self.root)
+            self.modal_cliente.title("➕ Nuevo Cliente")
+            self.modal_cliente.geometry("500x600")
+            self.modal_cliente.transient(self.root)
+            self.modal_cliente.grab_set()
+        
+        # Centrar la ventana modal
+            self.modal_cliente.update_idletasks()
+            x = (self.modal_cliente.winfo_screenwidth() // 2) - (250)
+            y = (self.modal_cliente.winfo_screenheight() // 2) - (300)
+            self.modal_cliente.geometry(f"500x600+{x}+{y}")
+        
+        # Frame principal
+            main_frame = ctk.CTkFrame(self.modal_cliente)
+            main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # Título
+            title_label = ctk.CTkLabel(
+            main_frame,
+            text="Registrar Nuevo Cliente",
+            font=ctk.CTkFont(size=20, weight="bold")
+            )
+            title_label.pack(pady=(10, 30))
+        
+        # Frame para el formulario
+            form_frame = ctk.CTkFrame(main_frame)
+            form_frame.pack(fill="x", padx=22, pady=17)
+        
+        # Variables para los campos
+            self.nombre_var = ctk.StringVar()
+            self.apellido_var = ctk.StringVar()
+            self.telefono_var = ctk.StringVar()
+            self.correo_var = ctk.StringVar()
+            self.direccion_var = ctk.StringVar()
+            self.id_cliente_var = ctk.StringVar()
+            self.fecha_registro_var=ctk.StringVar()
+            self.password_var=ctk.StringVar()
+        # Campos del formulario
+            fields=[
+                ("Nombre:", self.nombre_var),
+                ("Apellido:", self.apellido_var),
+                ("Teléfono:", self.telefono_var),
+                ("Correo:", self.correo_var),
+                ("Dirección:", self.direccion_var),
+                ("ID Cliente:", self.id_cliente_var),
+                ("Fecha de Registro",self.fecha_registro_var),
+                ("Contraseña",self.password_var)
+            ]
+        
+        # Crear los campos
+            for i, (label_text, var) in enumerate(fields):
+            # Label
+                label = ctk.CTkLabel(form_frame, text=label_text, font=ctk.CTkFont(size=14))
+                label.pack(anchor="w", padx=20, pady=(15, 5))
+            
+            # Entry
+                entry = ctk.CTkEntry(
+                    form_frame, 
+                    textvariable=var,
+                    height=35,
+                    font=ctk.CTkFont(size=12)
+                )
+                entry.pack(fill="x", padx=20, pady=(0, 10))
+            
+            # Si es el primer campo, darle foco
+                if i == 0:
+                    entry.focus()
+        
+        # Frame para botones
+            buttons_frame = ctk.CTkFrame(main_frame)
+            buttons_frame.pack(fill="x", padx=20, pady=20)
+        
+        # Botón Cancelar
+            btn_cancelar = ctk.CTkButton(
+            buttons_frame,
+            text="❌ Cancelar",
+            command=self.modal_cliente.destroy,
+            height=40,
+            fg_color=("gray70", "gray30"),
+            hover_color=("gray60", "gray40")
+            )
+            btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
+        
+        # Botón Guardar
+            btn_guardar = ctk.CTkButton(
+            buttons_frame,
+            text="💾 Guardar Cliente",
+            command=self.guardar_cliente,
+            height=40,
+            font=ctk.CTkFont(size=14, weight="bold")
+            )
+            btn_guardar.pack(side="right", padx=20, pady=15)
+
+    def guardar_cliente(self):
+        """Validar y guardar el nuevo cliente"""
+        
+        # Obtener valores
+        nombre = self.nombre_var.get().strip()
+        apellido = self.apellido_var.get().strip()
+        telefono = self.telefono_var.get().strip()
+        correo = self.correo_var.get().strip()
+        direccion = self.direccion_var.get().strip()
+        id_cliente = self.id_cliente_var.get().strip()
+        fecha_registro=self.fecha_registro_var.get().strip()
+        password=self.password_var.get().strip()
+        
+        # Validaciones básicas
+        errores = []
+        
+        if not nombre:
+            errores.append("• El nombre es obligatorio")
+        
+        if not apellido:
+            errores.append("• El apellido es obligatorio")
+            
+        if not telefono:
+            errores.append("• El teléfono es obligatorio")
+        elif not telefono.isdigit() or len(telefono) < 8:
+            errores.append("• El teléfono debe tener al menos 8 dígitos")
+        
+        if not correo:
+            errores.append("• El correo es obligatorio")
+        elif "@" not in correo or "." not in correo.split("@")[-1]:
+            errores.append("• El formato del correo no es válido")
+        
+        if not direccion:
+            errores.append("• La dirección es obligatoria")
+            
+        if not id_cliente:
+            errores.append("• El ID del cliente es obligatorio")
+        
+        # Si hay errores, mostrarlos
+        if errores:
+            mensaje_error = "Por favor corrige los siguientes errores:\n\n" + "\n".join(errores)
+            messagebox.showerror("Errores de validación", mensaje_error)
+            return
+        
+        # Intentar registrar el cliente
+        try:
+            # Crear objeto cliente con fecha actual
+            from Fechas import Tiempo
+            fecha_registro = Tiempo.Ahora()
+
+            
+            # Intentar registrar en el sistema
+            if self.gestion_clientes.registrar_cliente(nombre,id_cliente,password,apellido, telefono, correo,direccion,fecha_registro):
+                messagebox.showinfo(
+                    "Cliente Registrado", 
+                    f"Cliente {nombre} {apellido} registrado exitosamente!\nID: {id_cliente}"
+                )
+                
+                # Cerrar modal
+                self.modal_cliente.destroy()
+                
+                # Actualizar la vista de clientes si está activa
+                self.actualizar_lista_clientes()
+                
+            else:
+                messagebox.showerror(
+                    "Error de Registro", 
+                    f"Ya existe un cliente con el ID: {id_cliente}\nPor favor usa un ID diferente."
+                )
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
+            
+    def mostrar_gestion_clientes(self):
+            """Mostrar la interfaz de gestión de clientes"""
+            # Limpiar el contenido actual
+            self.limpiar_contenido()
+            
+            # Título principal
+            title_label = ctk.CTkLabel(
+                self.content_frame,
+                text="👥 Gestión de Clientes",
+                font=ctk.CTkFont(size=24, weight="bold")
+            )
+            title_label.pack(pady=20)
+            
+            # Frame principal para clientes
+            clientes_frame = ctk.CTkFrame(self.content_frame)
+            clientes_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            # Frame para botones superiores (más completo que el primero)
+            buttons_frame = ctk.CTkFrame(clientes_frame)
+            buttons_frame.pack(fill="x", padx=20, pady=10)
+            
+            # Botón Nuevo Cliente
+            btn_nuevo = ctk.CTkButton(
+                buttons_frame,
+                text="➕ Nuevo Cliente",
+                command=self.nuevo_cliente,
+                height=40,
+                font=ctk.CTkFont(size=14, weight="bold")
+                )
+            btn_nuevo.pack(side="left", padx=20, pady=15)
+            
+            # Botón Buscar Cliente
+            btn_buscar = ctk.CTkButton(
+                buttons_frame,
+                text="🔍 Buscar Cliente",
+                command=self.buscar_cliente,
+                height=40
+                )
+            btn_buscar.pack(side="left", padx=10, pady=15)
+            
+            # Botón Actualizar Lista (funcionalidad del segundo método)
+            btn_actualizar = ctk.CTkButton(
+                buttons_frame,
+                text="🔄 Actualizar",
+                command=self.actualizar_lista_clientes,
+                height=40,
+                fg_color=("gray70", "gray30"),
+                hover_color=("gray60", "gray40")
+                )
+            btn_actualizar.pack(side="right", padx=20, pady=15)
+            
+            # Título de la lista
+            list_title = ctk.CTkLabel(
+                clientes_frame,
+                text="Lista de Clientes",
+                font=ctk.CTkFont(size=16, weight="bold")
+                )
+            list_title.pack(pady=(20, 10))
+            
+            # Frame scrollable para la lista de clientes
+            self.lista_frame = ctk.CTkScrollableFrame(clientes_frame, height=400)
+            self.lista_frame.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            # Cargar la lista inicial de clientes
+            self.actualizar_lista_clientes()
+
+    def actualizar_lista_clientes(self):
+        """Actualizar la lista visual de clientes"""
+        # Verificar que lista_frame existe
+        if not hasattr(self, 'lista_frame'):
+            return
+        
+        # Limpiar la lista actual
+        for widget in self.lista_frame.winfo_children():
+            widget.destroy()
+
+        # Verificar si hay clientes registrados
+        if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
+            # Mostrar mensaje cuando no hay clientes
+            placeholder = ctk.CTkLabel(
+                self.lista_frame,
+                text="No hay clientes registrados. Haz clic en 'Nuevo Cliente' para comenzar.",
+                font=ctk.CTkFont(size=14),
+                text_color=("gray60", "gray40")
+                )
+            placeholder.pack(pady=50)
+            return
+
+        # Headers de la tabla
+        headers_frame = ctk.CTkFrame(self.lista_frame)
+        headers_frame.pack(fill="x", padx=10, pady=(5, 15))
+
+        headers = ["ID Cliente", "Nombre", "Apellido", "Teléfono", "Correo", "Fecha Registro", "Acciones"]
+        header_widths = [100, 120, 120, 100, 180, 120, 120]
+
+        for i, (header, width) in enumerate(zip(headers, header_widths)):
+            header_label = ctk.CTkLabel(
+                headers_frame,
+                text=header,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                width=width
+                )
+            header_label.grid(row=0, column=i, padx=5, pady=10, sticky="w")
+
+        # Mostrar cada cliente
+        for i, cliente in enumerate(self.gestion_clientes.clientes):
+            # Frame para cada cliente
+            cliente_frame = ctk.CTkFrame(self.lista_frame)
+            cliente_frame.pack(fill="x", padx=10, pady=2)
+            
+            # Datos del cliente
+            datos = [
+                getattr(cliente, 'id_cliente', 'N/A'),
+                getattr(cliente, 'nombre', 'N/A'),
+                getattr(cliente, 'apellido', 'N/A'),
+                getattr(cliente, 'telefono', 'N/A'),
+                getattr(cliente, 'correo', 'N/A'),
+                str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
+            ]
+            
+            # Mostrar datos en columnas
+            for j, (dato, width) in enumerate(zip(datos, header_widths[:-1])):
+                dato_label = ctk.CTkLabel(
+                    cliente_frame,
+                    text=str(dato),
+                    font=ctk.CTkFont(size=11),
+                    width=width,
+                    anchor="w"
+                )
+                dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
+            
+            # Botones de acción
+            acciones_frame = ctk.CTkFrame(cliente_frame)
+            acciones_frame.grid(row=0, column=len(datos), padx=5, pady=5)
+            
+            # Botón Ver/Editar
+            btn_ver = ctk.CTkButton(
+                acciones_frame,
+                text="👁️",
+                width=30,
+                height=25,
+                command=lambda c=cliente: self.ver_cliente(c),
+                font=ctk.CTkFont(size=12)
+                )
+            btn_ver.pack(side="left", padx=2)
+            
+            # Botón Eliminar
+            btn_eliminar = ctk.CTkButton(
+                acciones_frame,
+                text="🗑️",
+                width=30,
+                height=25,
+                fg_color=("red", "darkred"),
+                hover_color=("darkred", "red"),
+                command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
+                font=ctk.CTkFont(size=12)
+            )
+            btn_eliminar.pack(side="left", padx=2)
+
+        # Contador total de clientes
+        total_label = ctk.CTkLabel(
+            self.lista_frame,
+            text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
+            font=ctk.CTkFont(size=12, weight="bold")
+            )
+        total_label.pack(pady=10)
+
+    # Método auxiliar para asegurar que limpiar_contenido existe
+    def limpiar_contenido(self):
+        """Limpiar el contenido del frame principal"""
+        if hasattr(self, 'content_frame'):
+            for widget in self.content_frame.winfo_children():
+                widget.destroy()
+        else:
+            # Si content_frame no existe, créarlo
+            self.content_frame = ctk.CTkFrame(self.root)
+            self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    def ver_cliente(self, cliente):
+        """Mostrar detalles del cliente"""
+        from tkinter import messagebox
+        
+        info = f"""
+            ID Cliente: {cliente.id_cliente}
+            Nombre: {cliente.nombre} {cliente.apellido}
+            Teléfono: {cliente.telefono}
+            Correo: {cliente.correo}
+            Dirección: {cliente.direccion_envio}
+            Fecha Registro: {cliente.fecha_registro}
+            """
+        
+        messagebox.showinfo(f"Cliente: {cliente.nombre}", info)
+
+    def confirmar_eliminar_cliente(self, cliente):
+        """Confirmar eliminación de cliente"""
+        from tkinter import messagebox
+        
+        respuesta = messagebox.askyesno(
+            "Confirmar Eliminación",
+            f"¿Estás seguro de que deseas eliminar al cliente?\n\n"
+            f"Nombre: {cliente.nombre} {cliente.apellido}\n"
+            f"ID: {cliente.id_cliente}\n\n"
+            f"Esta acción no se puede deshacer."
+            )
+        
+        if respuesta:
+            
+            if cliente in self.gestion_clientes.clientes:
+                self.gestion_clientes.clientes.remove(cliente)
+                self.gestion_clientes.guardar_clientes()
+                messagebox.showinfo("Cliente Eliminado", f"Cliente {cliente.nombre} eliminado exitosamente")
+                self.actualizar_lista_clientes()  # Refrescar la lista
+    def buscar_cliente(self):
+        """Abrir diálogo para buscar cliente"""
+        # Verificar si ya hay una ventana de búsqueda abierta
+        if hasattr(self, 'modal_busqueda') and self.modal_busqueda.winfo_exists():
+            self.modal_busqueda.lift()  # Traer al frente
+            self.modal_busqueda.focus()
+            return
+
+        # Crear ventana modal para búsqueda
+        self.modal_busqueda = ctk.CTkToplevel(self.root)
+        self.modal_busqueda.title("🔍 Buscar Cliente")
+        self.modal_busqueda.geometry("700x500")
+        self.modal_busqueda.transient(self.root)
+        self.modal_busqueda.grab_set()
+
+        # Centrar la ventana modal
+        self.modal_busqueda.update_idletasks()
+        x = (self.modal_busqueda.winfo_screenwidth() // 2) - (350)
+        y = (self.modal_busqueda.winfo_screenheight() // 2) - (250)
+        self.modal_busqueda.geometry(f"700x500+{x}+{y}")
+
+        # Limpiar variables previas de búsqueda
+        self.limpiar_variables_busqueda()
+
+        # Frame principal
+        main_frame = ctk.CTkFrame(self.modal_busqueda)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Título
+        title_label = ctk.CTkLabel(
+            main_frame,
+            text="Buscar Cliente",
+            font=ctk.CTkFont(size=20, weight="bold")
+            )
+        title_label.pack(pady=(10, 20))
+
+        # Frame para búsqueda
+        search_frame = ctk.CTkFrame(main_frame)
+        search_frame.pack(fill="x", padx=20, pady=10)
+
+        # Inicializar variables ANTES de crear la interfaz
+        self.busqueda_var = ctk.StringVar()
+        self.filtro_activo = ctk.BooleanVar(value=True)
+        self.tipo_busqueda = ctk.StringVar(value="Todos los campos")
+
+        # Campo de búsqueda
+        search_label = ctk.CTkLabel(
+            search_frame, 
+            text="Buscar por nombre, apellido, ID o correo:",
+            font=ctk.CTkFont(size=14)
+            )
+        search_label.pack(anchor="w", padx=20, pady=(15, 5))
+
+        self.entry_busqueda = ctk.CTkEntry(
+            search_frame,
+            textvariable=self.busqueda_var,
+            height=35,
+            font=ctk.CTkFont(size=12),
+            placeholder_text="Escribe para buscar... (ej: Jose)"
+            )
+        self.entry_busqueda.pack(fill="x", padx=20, pady=(0, 15))
+
+        # Frame para opciones de búsqueda
+        options_frame = ctk.CTkFrame(search_frame)
+        options_frame.pack(fill="x", padx=20, pady=(0, 15))
+
+        # Checkbox para mostrar solo activos
+        checkbox_activos = ctk.CTkCheckBox(
+            options_frame,
+            text="Solo clientes activos",
+            variable=self.filtro_activo
+            )
+        checkbox_activos.pack(side="left", padx=20, pady=10)
+
+        # Selector de tipo de búsqueda
+        tipo_label = ctk.CTkLabel(options_frame, text="Buscar en:")
+        tipo_label.pack(side="left", padx=(40, 10), pady=10)
+
+    
+        tipo_menu = ctk.CTkOptionMenu(
+            options_frame,
+            values=["Todos los campos", "Solo nombre", "Solo ID", "Solo correo"],
+            variable=self.tipo_busqueda
+            )
+        tipo_menu.pack(side="left", padx=10, pady=10)
+
+        # Botones de acción 
+        buttons_frame = ctk.CTkFrame(search_frame)
+        buttons_frame.pack(fill="x", padx=20, pady=(0, 15))
+        
+        btn_buscar_manual = ctk.CTkButton(
+            buttons_frame,
+            text="🔍 Buscar",
+            command=self.ejecutar_busqueda,
+            height=35,
+            font=ctk.CTkFont(size=12, weight="bold")
+            )
+        btn_buscar_manual.pack(side="left", padx=20, pady=10)
+
+        btn_limpiar = ctk.CTkButton(
+            buttons_frame,
+            text="🗑️ Limpiar",
+            command=self.limpiar_busqueda,
+            height=35,
+            width=100,
+            fg_color=("gray70", "gray30")
+            )
+        btn_limpiar.pack(side="left", padx=10, pady=10)
+
+        btn_mostrar_todos = ctk.CTkButton(
+            buttons_frame,
+            text="👥 Mostrar Todos",
+            command=self.mostrar_todos_en_busqueda,
+            height=35,
+            width=120,
+            fg_color=("green", "darkgreen")
+            )
+        btn_mostrar_todos.pack(side="left", padx=10, pady=10)
+
+        # Frame para resultados
+        results_label = ctk.CTkLabel(
+            main_frame,
+            text="Resultados de la búsqueda:",
+            font=ctk.CTkFont(size=16, weight="bold")
+            )
+        results_label.pack(pady=(20, 10))
+
+        # Frame scrollable para resultados - CREAR SIEMPRE
+        self.resultados_frame = ctk.CTkScrollableFrame(main_frame, height=250)
+        self.resultados_frame.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # Frame para botones inferiores
+        bottom_buttons = ctk.CTkFrame(main_frame)
+        bottom_buttons.pack(fill="x", padx=20, pady=10)
+
+        btn_cerrar = ctk.CTkButton(
+            bottom_buttons,
+            text="❌ Cerrar",
+            command=self.cerrar_busqueda,
+            height=35,
+            fg_color=("gray70", "gray30")
+            )
+        btn_cerrar.pack(side="right", padx=20, pady=10)
+
+        # Inicializar con pantalla vacía - NO mostrar todos automáticamente
+        self.mostrar_mensaje_inicial()
+
+        # Configurar el evento de entrada DESPUÉS de crear todo
+        self.entry_busqueda.bind('<KeyRelease>', self.on_busqueda_keyrelease)
+        self.entry_busqueda.focus()
+    def limpiar_variables_busqueda(self):
+        """Limpiar variables de búsqueda previas"""
+        if hasattr(self, 'busqueda_var'):
+            del self.busqueda_var
+        if hasattr(self, 'filtro_activo'):
+            del self.filtro_activo
+        if hasattr(self, 'tipo_busqueda'):
+            del self.tipo_busqueda
+        if hasattr(self, 'resultados_frame'):
+            del self.resultados_frame
+    def mostrar_mensaje_inicial(self):
+        """Mostrar mensaje inicial en lugar de todos los clientes"""
+        # Limpiar resultados
         for widget in self.resultados_frame.winfo_children():
             widget.destroy()
         
-        # Verificar que hay clientes para buscar
-        if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
-            no_results = ctk.CTkLabel(
-                self.resultados_frame,
-                text="No hay clientes registrados para buscar.",
-                font=ctk.CTkFont(size=14),
-                text_color=("gray60", "gray40")
+        # Mostrar mensaje inicial
+        mensaje_inicial = ctk.CTkLabel(
+            self.resultados_frame,
+            text="Escribe en el campo de búsqueda para encontrar clientes.\n\nO haz clic en 'Mostrar Todos' para ver todos los clientes registrados.",
+            font=ctk.CTkFont(size=14),
+            text_color=("gray60", "gray40")
             )
-            no_results.pack(pady=30)
-            return
+        mensaje_inicial.pack(pady=50)     
+    def on_busqueda_keyrelease(self, event):
+        """Manejar evento cuando se escribe en el campo de búsqueda"""
+        # Solo buscar si hay texto
+        if self.busqueda_var.get().strip():
+            self.ejecutar_busqueda()  
+    def ejecutar_busqueda(self):
+        """Ejecutar la búsqueda de clientes"""
+        try:
+            # Verificar que resultados_frame existe
+            if not hasattr(self, 'resultados_frame') or not self.resultados_frame.winfo_exists():
+                print("Error: resultados_frame no existe")
+                return
 
-        # Obtener término de búsqueda
-        termino = self.busqueda_var.get().lower().strip()
-        
-        if not termino:
-            self.mostrar_mensaje_inicial()
-            return
+            # Limpiar resultados anteriores
+            for widget in self.resultados_frame.winfo_children():
+                widget.destroy()
             
-        tipo = self.tipo_busqueda.get()
-        
-        # Filtrar clientes
-        clientes_filtrados = []
-        for cliente in self.gestion_clientes.clientes:
-            # Determinar en qué campos buscar
-            campos_busqueda = []
-            if tipo == "Todos los campos":
-                campos_busqueda = [
-                    getattr(cliente, 'nombre', '').lower(),
-                    getattr(cliente, 'apellido', '').lower(),
-                    getattr(cliente, 'id_cliente', '').lower(),
-                    getattr(cliente, 'correo', '').lower(),
-                    getattr(cliente, 'telefono', '').lower()
-                ]
-            elif tipo == "Solo nombre":
-                campos_busqueda = [
-                    getattr(cliente, 'nombre', '').lower(), 
-                    getattr(cliente, 'apellido', '').lower()
-                ]
-            elif tipo == "Solo ID":
-                campos_busqueda = [getattr(cliente, 'id_cliente', '').lower()]
-            elif tipo == "Solo correo":
-                campos_busqueda = [getattr(cliente, 'correo', '').lower()]
+            # Verificar que hay clientes para buscar
+            if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
+                no_results = ctk.CTkLabel(
+                    self.resultados_frame,
+                    text="No hay clientes registrados para buscar.",
+                    font=ctk.CTkFont(size=14),
+                    text_color=("gray60", "gray40")
+                )
+                no_results.pack(pady=30)
+                return
+
+            # Obtener término de búsqueda
+            termino = self.busqueda_var.get().lower().strip()
             
-            # Verificar si el término está en algún campo
-            if any(termino in campo for campo in campos_busqueda if campo):
-                clientes_filtrados.append(cliente)
-        
-        # Mostrar resultados
-        if not clientes_filtrados:
-            no_results = ctk.CTkLabel(
-                self.resultados_frame,
-                text=f"No se encontraron clientes con '{termino}'.\nVerifica que el nombre esté escrito correctamente.",
-                font=ctk.CTkFont(size=14),
-                text_color=("orange", "orange")
-            )
-            no_results.pack(pady=30)
-        else:
-            self.mostrar_resultados_busqueda(clientes_filtrados)
-        
-      except Exception as e:
-        print(f"Error en búsqueda: {e}") 
+            if not termino:
+                self.mostrar_mensaje_inicial()
+                return
+                
+            tipo = self.tipo_busqueda.get()
+            
+            # Filtrar clientes
+            clientes_filtrados = []
+            for cliente in self.gestion_clientes.clientes:
+                # Determinar en qué campos buscar
+                campos_busqueda = []
+                if tipo == "Todos los campos":
+                    campos_busqueda = [
+                        getattr(cliente, 'nombre', '').lower(),
+                        getattr(cliente, 'apellido', '').lower(),
+                        getattr(cliente, 'id_cliente', '').lower(),
+                        getattr(cliente, 'correo', '').lower(),
+                        getattr(cliente, 'telefono', '').lower()
+                    ]
+                elif tipo == "Solo nombre":
+                    campos_busqueda = [
+                        getattr(cliente, 'nombre', '').lower(), 
+                        getattr(cliente, 'apellido', '').lower()
+                    ]
+                elif tipo == "Solo ID":
+                    campos_busqueda = [getattr(cliente, 'id_cliente', '').lower()]
+                elif tipo == "Solo correo":
+                    campos_busqueda = [getattr(cliente, 'correo', '').lower()]
+                
+                # Verificar si el término está en algún campo
+                if any(termino in campo for campo in campos_busqueda if campo):
+                    clientes_filtrados.append(cliente)
+            
+            # Mostrar resultados
+            if not clientes_filtrados:
+                no_results = ctk.CTkLabel(
+                    self.resultados_frame,
+                    text=f"No se encontraron clientes con '{termino}'.\nVerifica que el nombre esté escrito correctamente.",
+                    font=ctk.CTkFont(size=14),
+                    text_color=("orange", "orange")
+                )
+                no_results.pack(pady=30)
+            else:
+                self.mostrar_resultados_busqueda(clientes_filtrados)
+            
+        except Exception as e:
+            print(f"Error en búsqueda: {e}") 
     def mostrar_todos_en_busqueda(self):
-      """Mostrar todos los clientes en la búsqueda"""
-      try:
-         if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
-            self.mostrar_mensaje_inicial()
-            return
+        """Mostrar todos los clientes en la búsqueda"""
+        try:
+            if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
+                self.mostrar_mensaje_inicial()
+                return
+                
+            # Limpiar campo de búsqueda
+            self.busqueda_var.set("")
             
-        # Limpiar campo de búsqueda
-         self.busqueda_var.set("")
-        
-        # Mostrar todos los clientes
-         self.mostrar_resultados_busqueda(self.gestion_clientes.clientes)
-        
-      except Exception as e:
-        print(f"Error mostrando todos los clientes: {e}")    
+            # Mostrar todos los clientes
+            self.mostrar_resultados_busqueda(self.gestion_clientes.clientes)
+            
+        except Exception as e:
+            print(f"Error mostrando todos los clientes: {e}")    
     def mostrar_resultados_busqueda(self, clientes_filtrados):
-      """Mostrar la lista de clientes filtrados"""
-    # Limpiar resultados
-      for widget in self.resultados_frame.winfo_children():
-        widget.destroy()
-    
-    # Mostrar header
-      header_frame = ctk.CTkFrame(self.resultados_frame)
-      header_frame.pack(fill="x", padx=10, pady=(5, 10))
-    
-      headers = ["ID", "Nombre Completo", "Correo", "Teléfono", "Acciones"]
-      for i, header in enumerate(headers):
-        header_label = ctk.CTkLabel(
-            header_frame,
-            text=header,
-            font=ctk.CTkFont(size=12, weight="bold")
-        )
-        header_label.grid(row=0, column=i, padx=10, pady=8, sticky="w")
-    
-    # Mostrar cada cliente encontrado
-      for cliente in clientes_filtrados:
-        self.mostrar_cliente_resultado(cliente)
-    
-    # Actualizar contador
-      count_label = ctk.CTkLabel(
-         self.resultados_frame,
-         text=f"Se encontraron {len(clientes_filtrados)} cliente(s)",
-         font=ctk.CTkFont(size=12, weight="bold"),
-         text_color=("blue", "lightblue")
-         )
-      count_label.pack(pady=5)     
+        """Mostrar la lista de clientes filtrados"""
+        # Limpiar resultados
+        for widget in self.resultados_frame.winfo_children():
+            widget.destroy()
+        
+        # Mostrar header
+        header_frame = ctk.CTkFrame(self.resultados_frame)
+        header_frame.pack(fill="x", padx=10, pady=(5, 10))
+        
+        headers = ["ID", "Nombre Completo", "Correo", "Teléfono", "Acciones"]
+        for i, header in enumerate(headers):
+            header_label = ctk.CTkLabel(
+                header_frame,
+                text=header,
+                font=ctk.CTkFont(size=12, weight="bold")
+            )
+            header_label.grid(row=0, column=i, padx=10, pady=8, sticky="w")
+        
+        # Mostrar cada cliente encontrado
+        for cliente in clientes_filtrados:
+            self.mostrar_cliente_resultado(cliente)
+        
+        # Actualizar contador
+        count_label = ctk.CTkLabel(
+            self.resultados_frame,
+            text=f"Se encontraron {len(clientes_filtrados)} cliente(s)",
+            font=ctk.CTkFont(size=12, weight="bold"),
+            text_color=("blue", "lightblue")
+            )
+        count_label.pack(pady=5)     
     def mostrar_cliente_resultado(self, cliente):
-      """Mostrar un cliente en los resultados de búsqueda"""
-      resultado_frame = ctk.CTkFrame(self.resultados_frame)
-      resultado_frame.pack(fill="x", padx=10, pady=2)
+        """Mostrar un cliente en los resultados de búsqueda"""
+        resultado_frame = ctk.CTkFrame(self.resultados_frame)
+        resultado_frame.pack(fill="x", padx=10, pady=2)
 
-     # Datos del cliente
-      id_cliente = getattr(cliente, 'id_cliente', 'N/A')
-      nombre = getattr(cliente, 'nombre', 'N/A')
-      apellido = getattr(cliente, 'apellido', '')
-      correo = getattr(cliente, 'correo', 'N/A')
-      telefono = getattr(cliente, 'telefono', 'N/A')
+        # Datos del cliente
+        id_cliente = getattr(cliente, 'id_cliente', 'N/A')
+        nombre = getattr(cliente, 'nombre', 'N/A')
+        apellido = getattr(cliente, 'apellido', '')
+        correo = getattr(cliente, 'correo', 'N/A')
+        telefono = getattr(cliente, 'telefono', 'N/A')
 
-     # Columnas de datos
-      ctk.CTkLabel(resultado_frame, text=id_cliente, font=ctk.CTkFont(size=11), width=80).grid(row=0, column=0, padx=10, pady=8, sticky="w")
-      ctk.CTkLabel(resultado_frame, text=f"{nombre} {apellido}".strip(), font=ctk.CTkFont(size=11, weight="bold"), width=150, text_color=("blue", "lightblue")).grid(row=0, column=1, padx=10, pady=8, sticky="w")
-      ctk.CTkLabel(resultado_frame, text=correo, font=ctk.CTkFont(size=11), width=180).grid(row=0, column=2, padx=10, pady=8, sticky="w")
-      ctk.CTkLabel(resultado_frame, text=telefono, font=ctk.CTkFont(size=11), width=100).grid(row=0, column=3, padx=10, pady=8, sticky="w")
+        # Columnas de datos
+        ctk.CTkLabel(resultado_frame, text=id_cliente, font=ctk.CTkFont(size=11), width=80).grid(row=0, column=0, padx=10, pady=8, sticky="w")
+        ctk.CTkLabel(resultado_frame, text=f"{nombre} {apellido}".strip(), font=ctk.CTkFont(size=11, weight="bold"), width=150, text_color=("blue", "lightblue")).grid(row=0, column=1, padx=10, pady=8, sticky="w")
+        ctk.CTkLabel(resultado_frame, text=correo, font=ctk.CTkFont(size=11), width=180).grid(row=0, column=2, padx=10, pady=8, sticky="w")
+        ctk.CTkLabel(resultado_frame, text=telefono, font=ctk.CTkFont(size=11), width=100).grid(row=0, column=3, padx=10, pady=8, sticky="w")
 
-     # Botones de acción
-      acciones_frame = ctk.CTkFrame(resultado_frame)
-      acciones_frame.grid(row=0, column=4, padx=10, pady=5)
-     
-      ctk.CTkButton(acciones_frame, text="👁️ Ver", width=60, height=25, command=lambda: self.ver_cliente(cliente), font=ctk.CTkFont(size=10)).pack(side="left", padx=2)
-      ctk.CTkButton(acciones_frame, text="✅ Usar", width=60, height=25, command=lambda: self.seleccionar_cliente(cliente), font=ctk.CTkFont(size=10), fg_color=("green", "darkgreen")).pack(side="left", padx=2) 
+        # Botones de acción
+        acciones_frame = ctk.CTkFrame(resultado_frame)
+        acciones_frame.grid(row=0, column=4, padx=10, pady=5)
+        
+        ctk.CTkButton(acciones_frame, text="👁️ Ver", width=60, height=25, command=lambda: self.ver_cliente(cliente), font=ctk.CTkFont(size=10)).pack(side="left", padx=2)
+        ctk.CTkButton(acciones_frame, text="✅ Usar", width=60, height=25, command=lambda: self.seleccionar_cliente(cliente), font=ctk.CTkFont(size=10), fg_color=("green", "darkgreen")).pack(side="left", padx=2) 
     def seleccionar_cliente(self, cliente):
-      """Seleccionar un cliente y cerrar la búsqueda"""
-      from tkinter import messagebox
-    
-      messagebox.showinfo(
-        "Cliente Seleccionado",
-        f"Has seleccionado:\n\n"
-        f"ID: {getattr(cliente, 'id_cliente', 'N/A')}\n"
-        f"Nombre: {getattr(cliente, 'nombre', 'N/A')} {getattr(cliente, 'apellido', '')}\n"
-        f"Correo: {getattr(cliente, 'correo', 'N/A')}\n"
-        f"Teléfono: {getattr(cliente, 'telefono', 'N/A')}"
-       )
-    
-      self.cerrar_busqueda() 
+        """Seleccionar un cliente y cerrar la búsqueda"""
+        from tkinter import messagebox
+        
+        messagebox.showinfo(
+            "Cliente Seleccionado",
+            f"Has seleccionado:\n\n"
+            f"ID: {getattr(cliente, 'id_cliente', 'N/A')}\n"
+            f"Nombre: {getattr(cliente, 'nombre', 'N/A')} {getattr(cliente, 'apellido', '')}\n"
+            f"Correo: {getattr(cliente, 'correo', 'N/A')}\n"
+            f"Teléfono: {getattr(cliente, 'telefono', 'N/A')}"
+        )
+        
+        self.cerrar_busqueda() 
     def limpiar_busqueda(self):
-      """Limpiar el campo de búsqueda"""
-      self.busqueda_var.set("")
-      self.tipo_busqueda.set("Todos los campos")
-      self.filtro_activo.set(True)
-      self.mostrar_mensaje_inicial()
+        """Limpiar el campo de búsqueda"""
+        self.busqueda_var.set("")
+        self.tipo_busqueda.set("Todos los campos")
+        self.filtro_activo.set(True)
+        self.mostrar_mensaje_inicial()
 
     def cerrar_busqueda(self):
-      """Cerrar la ventana de búsqueda correctamente"""
-      if hasattr(self, 'modal_busqueda') and self.modal_busqueda.winfo_exists():
-        self.modal_busqueda.destroy()
-    
-    # Limpiar variables
-      self.limpiar_variables_busqueda()        
+        """Cerrar la ventana de búsqueda correctamente"""
+        if hasattr(self, 'modal_busqueda') and self.modal_busqueda.winfo_exists():
+            self.modal_busqueda.destroy()
+        
+        # Limpiar variables
+        self.limpiar_variables_busqueda()        
 
     def ver_cliente_desde_busqueda(self, cliente):
-     """Ver detalles del cliente desde la búsqueda"""
-     self.ver_cliente(cliente)  
-
-    def seleccionar_cliente(self, cliente):
-     """Seleccionar un cliente y cerrar la búsqueda"""
-     from tkinter import messagebox
-    
-     respuesta = messagebox.showinfo(
-        "Cliente Seleccionado",
-        f"Has seleccionado:\n\n"
-        f"ID: {cliente.id_cliente}\n"
-        f"Nombre: {cliente.nombre} {cliente.apellido}\n"
-        f"Correo: {cliente.correo}\n\n"
-        f"¿Qué deseas hacer con este cliente?"
-        )
-    
-    # Cerrar la ventana de búsqueda
-     self.modal_busqueda.destroy()
-     
-    
+        """Ver detalles del cliente desde la búsqueda"""
+        self.ver_cliente(cliente)      
+        # Cerrar la ventana de búsqueda
+        self.modal_busqueda.destroy()
+        
+        
     def salir_aplicacion(self):
-     """Confirmar y salir de la aplicación"""
-     if messagebox.askyesno("Confirmar Salida", "¿Estás seguro de que deseas salir?"):
-        self.root.quit()
-        self.root.destroy()
-    
+        """Confirmar y salir de la aplicación"""
+        if messagebox.askyesno("Confirmar Salida", "¿Estás seguro de que deseas salir?"):
+            self.root.quit()
+            self.root.destroy()
+        
     def ejecutar(self):
-     """Ejecutar la aplicación"""
-     self.root.mainloop()
+        """Ejecutar la aplicación"""
+        self.root.mainloop()
 
 def main():
   """Función principal"""
