@@ -141,13 +141,13 @@ class SistemaCompraModerno:
             font=ctk.CTkFont(size=16)
         )
         subtitle_label.pack(pady=10)
-        
-       
+        total_productos=self.inventario.contar_productos()
+        total_clientes = len(self.gestion_clientes.clientes)
         stats_frame = ctk.CTkFrame(welcome_frame)
         stats_frame.pack(pady=40, padx=40, fill="x")
         stats_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        self.crear_stat_card(stats_frame, "👥", "Clientes", "0", 0, 0)
-        self.crear_stat_card(stats_frame, "📦", "Productos", "0", 0, 1)
+        self.crear_stat_card(stats_frame, "👥", "Clientes", str(total_clientes), 0, 0)
+        self.crear_stat_card(stats_frame, "📦", "Productos", str(total_productos), 0, 1)
         self.crear_stat_card(stats_frame, "💰", "Ventas Hoy", "$0", 0, 2)
         quick_access_frame = ctk.CTkFrame(welcome_frame)
         quick_access_frame.pack(pady=20, padx=40, fill="x")

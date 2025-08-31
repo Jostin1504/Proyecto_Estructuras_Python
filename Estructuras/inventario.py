@@ -34,7 +34,16 @@ class ListaInventario:
     def __init__(self):
         self.primero = None
         self.ultimo = None
-
+    def contar_productos(self):
+        """Contar productos recorriendo directamente los nodos"""
+        contador = 0
+        actual = self.primero
+        
+        while actual is not None:
+            contador += 1
+            actual = actual.siguiente
+            
+        return contador
     def agregar_articulo(self, articulo):
         """
         Agrega un artículo al inventario.
