@@ -1262,7 +1262,7 @@ class SistemaCompraModerno:
             header_label.grid(row=0, column=i, padx=5, pady=10, sticky="w")
 
     # Mostrar cada cliente
-      for i, cliente in enumerate(self.gestion_clientes.clientes):
+        for i, cliente in enumerate(self.gestion_clientes.clientes):
          # Frame para cada cliente
          cliente_frame = ctk.CTkFrame(self.lista_frame)
          cliente_frame.pack(fill="x", padx=10, pady=2)
