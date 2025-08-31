@@ -1,6 +1,4 @@
 #La lista va a manejar pilas de articulos iguales
-import csv
-from Clases_Base.articulo import Articulo
 class PilaArticulos:
     def __init__(self):
         self.items = []
@@ -34,16 +32,7 @@ class ListaInventario:
     def __init__(self):
         self.primero = None
         self.ultimo = None
-    def contar_productos(self):
-        """Contar productos recorriendo directamente los nodos"""
-        contador = 0
-        actual = self.primero
-        
-        while actual is not None:
-            contador += 1
-            actual = actual.siguiente
-            
-        return contador
+
     def agregar_articulo(self, articulo):
         """
         Agrega un artículo al inventario.
@@ -230,38 +219,3 @@ class ListaInventario:
                 return len(actual.pila.items) >= cantidad
             actual = actual.siguiente
         return False
-    
-
-    #guardar y cargar csv
-    def guardar_inventario(self, nombre_archivo ="inventario.csv"):
-        print("Entre en guardar")
-        with open(nombre_archivo, 'w', newline='', encoding='utf-8') as archivo:
-            escritor = csv.writer(archivo)
-            escritor.writerow(["Pila: ", "Nombre: ", "Tipo: ", "Precio: ", "Cantidad: ","\n"])
-            actual = self.primero
-            contador = 1
-
-            while actual:
-                fila = [f"\nPila {contador}", actual.dato.nombre, actual.dato.tipo, actual.dato.precio]
-
-                for i, pila in enumerate(actual.pila.items, start=1):
-                    obj = [str(obj) for obj in pila.items]
-                    escritor.writerow([f"Pila {i}"] + obj)
-                contador += 1
-                actual = actual.siguiente
-
-    def cargar_inventario(self, nombre_archivo="inventario.csv"):
-        print("Entre en cargar")
-        with open(nombre_archivo, 'r', newline='', encoding='utf-8') as archivo:
-            lector = csv.reader(archivo)
-            next(lector)  # Saltos de linea
-
-            for fila in lector:
-                #acomoda por filas
-                nombre = fila[1]
-                tipo = fila[2]
-                precio = float(fila[3])
-                cantidad = int(fila[4])
-                articulo_obj = Articulo(nombre, tipo, precio, cantidad) #crea nuevamente el objeto Articulo
-                self.agregar_articulo(articulo_obj)                     #lo agrega a la lista
-                print(f"Cargado: {fila}")

@@ -1,6 +1,5 @@
 import os
 import sys
-import csv
 current_dir = os.path.dirname(os.path.abspath(__file__))
 clases_base_path = os.path.join(current_dir, "Clases_Base")
 sys.path.append(clases_base_path)
@@ -13,7 +12,6 @@ from Estructuras.inventario import ListaInventario
 
 lista = ListaInventario()
 
-# lista.cargar_inventario("inventario.csv")
 lista.agregar_articulo(Articulo("Laptop", "Electrónica", 1500.00, 10))
 lista.agregar_articulo(Articulo("Teléfono", "Electrónica", 800.00, 5))
 lista.agregar_articulo(Articulo("Silla", "Muebles", 120.00, 20))
@@ -56,5 +54,4 @@ for nodo in lista_ordenada_alfabeticamente:
     print(nodo.pila)
     print(" -----------\n")
 
-lista.guardar_inventario("inventario.csv")
 

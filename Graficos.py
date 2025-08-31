@@ -141,13 +141,13 @@ class SistemaCompraModerno:
             font=ctk.CTkFont(size=16)
         )
         subtitle_label.pack(pady=10)
-        total_productos=self.inventario.contar_productos()
-        total_clientes = len(self.gestion_clientes.clientes)
+        
+       
         stats_frame = ctk.CTkFrame(welcome_frame)
         stats_frame.pack(pady=40, padx=40, fill="x")
         stats_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        self.crear_stat_card(stats_frame, "👥", "Clientes", str(total_clientes), 0, 0)
-        self.crear_stat_card(stats_frame, "📦", "Productos", str(total_productos), 0, 1)
+        self.crear_stat_card(stats_frame, "👥", "Clientes", "0", 0, 0)
+        self.crear_stat_card(stats_frame, "📦", "Productos", "0", 0, 1)
         self.crear_stat_card(stats_frame, "💰", "Ventas Hoy", "$0", 0, 2)
         quick_access_frame = ctk.CTkFrame(welcome_frame)
         quick_access_frame.pack(pady=20, padx=40, fill="x")
@@ -1261,95 +1261,95 @@ class SistemaCompraModerno:
                 )
             header_label.grid(row=0, column=i, padx=5, pady=10, sticky="w")
 
-    # Mostrar cada cliente
+        # Mostrar cada cliente
         for i, cliente in enumerate(self.gestion_clientes.clientes):
-         # Frame para cada cliente
-         cliente_frame = ctk.CTkFrame(self.lista_frame)
-         cliente_frame.pack(fill="x", padx=10, pady=2)
-        
-        # Datos del cliente
-         datos = [
-            getattr(cliente, 'id_cliente', 'N/A'),
-            getattr(cliente, 'nombre', 'N/A'),
-            getattr(cliente, 'apellido', 'N/A'),
-            getattr(cliente, 'telefono', 'N/A'),
-            getattr(cliente, 'correo', 'N/A'),
-            str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
-           ]
-        
-        # Mostrar datos en columnas
-         for j, (dato, width) in enumerate(zip(datos, header_widths[:-1])):
-            dato_label = ctk.CTkLabel(
-                cliente_frame,
-                text=str(dato),
-                font=ctk.CTkFont(size=11),
-                width=width,
-                anchor="w"
-            )
-            dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
-        
-        # Botones de acción
-         acciones_frame = ctk.CTkFrame(cliente_frame)
-         acciones_frame.grid(row=0, column=len(datos), padx=5, pady=5, sticky="e")
-        
-        # Botón Ver/Editar
-         btn_ver = ctk.CTkButton(
-            acciones_frame,
-            text="👁️",
-            width=30,
-            height=25,
-            command=lambda c=cliente: self.ver_cliente(c),
-            font=ctk.CTkFont(size=12)
-            )
-         btn_ver.grid(row=0, column=0, padx=2, pady=5)
+            # Frame para cada cliente
+            cliente_frame = ctk.CTkFrame(self.lista_frame)
+            cliente_frame.pack(fill="x", padx=10, pady=2)
+            
+            # Datos del cliente
+            datos = [
+                getattr(cliente, 'id_cliente', 'N/A'),
+                getattr(cliente, 'nombre', 'N/A'),
+                getattr(cliente, 'apellido', 'N/A'),
+                getattr(cliente, 'telefono', 'N/A'),
+                getattr(cliente, 'correo', 'N/A'),
+                str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
+              ]
+            
+            # Mostrar datos en columnas
+            for j, (dato, width) in enumerate(zip(datos, header_widths[:-1])):
+                dato_label = ctk.CTkLabel(
+                    cliente_frame,
+                    text=str(dato),
+                    font=ctk.CTkFont(size=11),
+                    width=width,
+                    anchor="w"
+                )
+                dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
+            
+            # Botones de acción
+            acciones_frame = ctk.CTkFrame(cliente_frame)
+            acciones_frame.grid(row=0, column=len(datos), padx=5, pady=5, sticky="e")
+            
+            # Botón Ver/Editar
+            btn_ver = ctk.CTkButton(
+                acciones_frame,
+                text="👁️",
+                width=30,
+                height=25,
+                command=lambda c=cliente: self.ver_cliente(c),
+                font=ctk.CTkFont(size=12)
+                )
+            btn_ver.grid(row=0, column=0, padx=2, pady=5)
 
-         acciones_frame.grid_columnconfigure(0, weight=1)
-         acciones_frame.grid_columnconfigure(1, weight=1)
-         acciones_frame.grid_columnconfigure(2, weight=1)
+            acciones_frame.grid_columnconfigure(0, weight=1)
+            acciones_frame.grid_columnconfigure(1, weight=1)
+            acciones_frame.grid_columnconfigure(2, weight=1)
+            
+            # Botón Eliminar
+            btn_eliminar = ctk.CTkButton(
+                acciones_frame,
+                text="🗑️",
+                width=30,
+                height=25,
+                fg_color=("red", "darkred"),
+                hover_color=("darkred", "red"),
+                command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
+                font=ctk.CTkFont(size=12)
+              )
+            btn_eliminar.grid(row=0, column=2, padx=2, pady=5)
+            # Botón Ver/Editar
+            btn_ver = ctk.CTkButton(
+              acciones_frame,
+              text="👁️",
+              width=30,
+              height=25,
+              command=lambda c=cliente: self.ver_cliente(c),
+              font=ctk.CTkFont(size=12)
+              )
+            btn_ver.grid(row=0, column=0, padx=2, pady=5)
         
-        # Botón Eliminar
-         btn_eliminar = ctk.CTkButton(
-            acciones_frame,
-            text="🗑️",
-            width=30,
-            height=25,
-            fg_color=("red", "darkred"),
-            hover_color=("darkred", "red"),
-            command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
-            font=ctk.CTkFont(size=12)
-           )
-         btn_eliminar.grid(row=0, column=2, padx=2, pady=5)
-         # Botón Ver/Editar
-         btn_ver = ctk.CTkButton(
-           acciones_frame,
-           text="👁️",
-          width=30,
-           height=25,
-           command=lambda c=cliente: self.ver_cliente(c),
-           font=ctk.CTkFont(size=12)
-           )
-         btn_ver.grid(row=0, column=0, padx=2, pady=5)
-    
-    # Botón Gestionar Tarjetas (NUEVO)
-         btn_tarjetas = ctk.CTkButton(
-          acciones_frame,
-          text="💳",
-          width=30,
-          height=25,
-          command=lambda c=cliente: self.gestionar_tarjetas_cliente(c),
-          font=ctk.CTkFont(size=12),
-          fg_color=("green", "darkgreen"),
-         hover_color=("darkgreen", "green")
-        )
-         btn_tarjetas.grid(row=0, column=1, padx=2, pady=5)
-
-        # Contador total de clientes
-        total_label = ctk.CTkLabel(
-            self.lista_frame,
-            text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
-            font=ctk.CTkFont(size=12, weight="bold")
+        # Botón Gestionar Tarjetas (NUEVO)
+            btn_tarjetas = ctk.CTkButton(
+              acciones_frame,
+              text="💳",
+              width=30,
+              height=25,
+              command=lambda c=cliente: self.gestionar_tarjetas_cliente(c),
+              font=ctk.CTkFont(size=12),
+              fg_color=("green", "darkgreen"),
+            hover_color=("darkgreen", "green")
             )
-        total_label.pack(pady=10)
+            btn_tarjetas.grid(row=0, column=1, padx=2, pady=5)
+
+            # Contador total de clientes
+            total_label = ctk.CTkLabel(
+                self.lista_frame,
+                text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
+                font=ctk.CTkFont(size=12, weight="bold")
+                )
+            total_label.pack(pady=10)
 
     # Método auxiliar para asegurar que limpiar_contenido existe
     def limpiar_contenido(self):

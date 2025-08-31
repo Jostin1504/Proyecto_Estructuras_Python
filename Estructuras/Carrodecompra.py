@@ -8,7 +8,7 @@ class CarroDeCompra:
         self.id_carrito = str(uuid.uuid4())
         self.cliente = cliente  
         self.items = []  
-        self.fecha_creacion = Tiempo.Ahora()
+        self.fecha_creacion = Tiempo.ahora()
         self.estado = "abierto"  
 
     def agregar_item(self, id_producto, nombre, cantidad, precio_unitario):
