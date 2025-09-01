@@ -209,7 +209,16 @@ class ListaInventario:
                     return True
                 actual = actual.siguiente
         return False
-
+    def contar_productos(self):
+        """Contar productos recorriendo directamente los nodos"""
+        contador = 0
+        actual = self.primero
+        
+        while actual is not None:
+            contador += 1
+            actual = actual.siguiente
+            
+        return contador
     #Este metodo comprueba la cantidad de la pila para evitar que el usuario 
     #intente comprar mas de los que hay 
     def verificar_cantidad_articulo(self, nombre, cantidad):
@@ -219,3 +228,6 @@ class ListaInventario:
                 return len(actual.pila.items) >= cantidad
             actual = actual.siguiente
         return False
+        
+
+    

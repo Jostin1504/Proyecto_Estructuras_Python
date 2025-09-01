@@ -69,7 +69,7 @@ class GestionClientes:
         self.clientes.append(nuevo_cliente)
         self.guardar_clientes()
         return True
- 
+    
     def login(self, id, password):
         for c in self.clientes:
             if c.id_cliente == id and c.password == password:

@@ -1,3 +1,4 @@
+import csv
 import os
 import sys
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -53,5 +54,5 @@ for nodo in lista_ordenada_alfabeticamente:
     print(nodo.dato)
     print(nodo.pila)
     print(" -----------\n")
-
+lista.guardar_inventario("inventario.csv")
 

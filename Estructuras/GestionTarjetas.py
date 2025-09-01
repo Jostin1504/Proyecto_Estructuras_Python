@@ -27,9 +27,13 @@ class GestionTarjetas:
                 for num, cvv, banco, id_usuario in reader:
                     tarjeta = TarjetaDeCompra(num, cvv, banco, id_usuario)
                     self.tarjetas.append(tarjeta)
-                    cliente = self.gestor_clientes.login(id_usuario, None)
-                    if cliente:
-                        cliente.tarjetas.append(tarjeta)
+                    cliente = None
+                    for c in self.gestor_clientes.clientes:
+                         if str(c.id_cliente).strip() == str(id_usuario).strip():
+                             cliente = c
+                             break
+                    if cliente and hasattr(cliente, 'tarjetas_compra'):
+                        cliente.tarjetas_compra.append(tarjeta)
         except FileNotFoundError:
             open(self.archivo_tarjetas, 'w', encoding='utf-8').close()
 
@@ -37,7 +41,7 @@ class GestionTarjetas:
         with open(self.archivo_tarjetas, 'w', newline='', encoding='utf-8') as archivo:
             escritor = csv.writer(archivo)
             for t in self.tarjetas:
-                escritor.writerow([t.numero, t.codigo, t.banco, t.id_usuario])
+                escritor.writerow([t.numero_tarjeta, t.codigo, t.banco, t.id_usuario])
 
     def registrar_tarjeta(self, id_usuario, numero, codigo, banco):
        if len(numero) not in (15, 16):

@@ -142,12 +142,13 @@ class SistemaCompraModerno:
         )
         subtitle_label.pack(pady=10)
         
-       
+        total_productos=self.inventario.contar_productos()
+        total_clientes = len(self.gestion_clientes.clientes)
         stats_frame = ctk.CTkFrame(welcome_frame)
         stats_frame.pack(pady=40, padx=40, fill="x")
         stats_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        self.crear_stat_card(stats_frame, "👥", "Clientes", "0", 0, 0)
-        self.crear_stat_card(stats_frame, "📦", "Productos", "0", 0, 1)
+        self.crear_stat_card(stats_frame, "👥", "Clientes", str(total_clientes), 0, 0)
+        self.crear_stat_card(stats_frame, "📦", "Productos", str(total_productos), 0, 1)
         self.crear_stat_card(stats_frame, "💰", "Ventas Hoy", "$0", 0, 2)
         quick_access_frame = ctk.CTkFrame(welcome_frame)
         quick_access_frame.pack(pady=20, padx=40, fill="x")
@@ -1766,7 +1767,358 @@ class SistemaCompraModerno:
     # Cerrar la ventana de búsqueda
      self.modal_busqueda.destroy()
      
+    def gestionar_tarjetas_cliente(self, cliente):
+      """Abrir interfaz para gestionar las tarjetas de un cliente"""
+    # Crear ventana modal para gestión de tarjetas
+      self.modal_tarjetas = ctk.CTkToplevel(self.root)
+      self.modal_tarjetas.title(f"💳 Tarjetas de {cliente.nombre} {cliente.apellido}")
+      self.modal_tarjetas.geometry("800x600")
+      self.modal_tarjetas.transient(self.root)
+      self.modal_tarjetas.grab_set()
+
+    # Centrar ventana
+      self.modal_tarjetas.update_idletasks()
+      x = (self.modal_tarjetas.winfo_screenwidth() // 2) - 400
+      y = (self.modal_tarjetas.winfo_screenheight() // 2) - 300
+      self.modal_tarjetas.geometry(f"800x600+{x}+{y}")
+
+    # Frame principal
+      main_frame = ctk.CTkFrame(self.modal_tarjetas)
+      main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # Título
+      title_label = ctk.CTkLabel(
+          main_frame,
+          text=f"Gestión de Tarjetas - {cliente.nombre} {cliente.apellido}",
+          font=ctk.CTkFont(size=18, weight="bold")
+         )
+      title_label.pack(pady=(10, 20))
+
+    # Info del cliente
+      info_frame = ctk.CTkFrame(main_frame)
+      info_frame.pack(fill="x", padx=10, pady=10)
     
+      cliente_info = ctk.CTkLabel(
+          info_frame,
+          text=f"👤 {cliente.nombre} {cliente.apellido} | 🆔 {cliente.id_cliente[:8]}... | 📧 {cliente.correo}",
+          font=ctk.CTkFont(size=12)
+         )
+      cliente_info.pack(pady=10)
+
+    # Botón agregar tarjeta
+      btn_agregar_tarjeta = ctk.CTkButton(
+         main_frame,
+         text="➕ Agregar Nueva Tarjeta",
+        command=lambda: self.abrir_modal_nueva_tarjeta(cliente),
+         height=40,
+         font=ctk.CTkFont(size=14, weight="bold")
+         )
+      btn_agregar_tarjeta.pack(pady=10)
+
+    # Frame para lista de tarjetas
+      self.tarjetas_list_frame = ctk.CTkScrollableFrame(
+         main_frame,
+         label_text="Tarjetas Registradas"
+         )
+      self.tarjetas_list_frame.pack(fill="both", expand=True, padx=10, pady=20)
+
+    # Cargar tarjetas del cliente
+      self.cargar_tarjetas_cliente(cliente)
+
+    # Botón cerrar
+      btn_cerrar = ctk.CTkButton(
+         main_frame,
+         text="❌ Cerrar",
+         command=self.modal_tarjetas.destroy,
+         height=35,
+         fg_color=("gray70", "gray30")
+         )
+      btn_cerrar.pack(pady=10)
+    def cargar_tarjetas_cliente(self, cliente):
+      """Cargar y mostrar las tarjetas del cliente"""
+    # Limpiar frame
+      for widget in self.tarjetas_list_frame.winfo_children():
+         widget.destroy()
+
+    # Buscar tarjetas del cliente usando el gestor de tarjetas
+      tarjetas_cliente = []
+      if hasattr(self, 'gestion_tarjetas'):
+         tarjetas_cliente = [
+             t for t in self.gestion_tarjetas.tarjetas 
+             if t.id_usuario == cliente.id_cliente
+             ]    
+
+      if not tarjetas_cliente:
+         no_cards_label = ctk.CTkLabel(
+             self.tarjetas_list_frame,
+             text="💳 Este cliente no tiene tarjetas registradas.\nHaz clic en 'Agregar Nueva Tarjeta' para comenzar.",
+              font=ctk.CTkFont(size=14),
+             text_color=("gray60", "gray40")
+            )
+         no_cards_label.pack(pady=50)
+         return
+
+    # Mostrar cada tarjeta
+      for i, tarjeta in enumerate(tarjetas_cliente):
+         self.crear_tarjeta_visual(tarjeta, i + 1) 
+    def crear_tarjeta_visual(self, tarjeta, numero_tarjeta):
+      """Crear representación visual de una tarjeta"""
+    # Frame de la tarjeta
+      card_frame = ctk.CTkFrame(self.tarjetas_list_frame)
+      card_frame.pack(fill="x", padx=10, pady=10)
+
+    # Frame de información
+      info_frame = ctk.CTkFrame(card_frame)
+      info_frame.pack(side="left", fill="both", expand=True, padx=15, pady=15)
+
+    # Número de tarjeta (solo últimos 4 dígitos)
+      numero_label = ctk.CTkLabel(
+         info_frame,
+         text=f"💳 Tarjeta #{numero_tarjeta} - **** **** **** {tarjeta.numero_tarjeta[-4:]}",
+         font=ctk.CTkFont(size=16, weight="bold"),
+         text_color=("blue", "lightblue")
+         )
+      numero_label.pack(anchor="w", padx=10, pady=(10, 5))
+
+    # Banco
+      banco_label = ctk.CTkLabel(
+         info_frame,
+         text=f"🏛️ Banco: {tarjeta.banco}",
+         font=ctk.CTkFont(size=14)
+         )
+      banco_label.pack(anchor="w", padx=10, pady=2)
+
+    # CVV (oculto)
+      cvv_label = ctk.CTkLabel(
+         info_frame,
+         text="🔒 CVV: ***",
+         font=ctk.CTkFont(size=12),
+         text_color=("gray60", "gray40")
+         )
+      cvv_label.pack(anchor="w", padx=10, pady=(2, 10))
+
+    # Botones
+      buttons_frame = ctk.CTkFrame(card_frame)
+      buttons_frame.pack(side="right", fill="y", padx=15, pady=15)
+
+    # Botón eliminar tarjeta
+      btn_eliminar = ctk.CTkButton(
+         buttons_frame,
+         text="🗑️ Eliminar",
+         command=lambda t=tarjeta: self.confirmar_eliminar_tarjeta(t),
+        width=100,
+         height=35,
+         fg_color=("red", "darkred")
+         )
+      btn_eliminar.pack(pady=5)    
+    def abrir_modal_nueva_tarjeta(self, cliente):
+      """Abrir modal para agregar nueva tarjeta"""
+      modal_nueva_tarjeta = ctk.CTkToplevel(self.modal_tarjetas)
+      modal_nueva_tarjeta.title("➕ Nueva Tarjeta")
+      modal_nueva_tarjeta.geometry("500x450")
+      modal_nueva_tarjeta.transient(self.modal_tarjetas)
+      modal_nueva_tarjeta.grab_set()
+
+    # Centrar ventana
+      modal_nueva_tarjeta.update_idletasks()
+      x = (modal_nueva_tarjeta.winfo_screenwidth() // 2) - 250
+      y = (modal_nueva_tarjeta.winfo_screenheight() // 2) - 225
+      modal_nueva_tarjeta.geometry(f"500x450+{x}+{y}")
+
+    # Frame principal
+      main_frame = ctk.CTkFrame(modal_nueva_tarjeta)
+      main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # Título
+      title_label = ctk.CTkLabel(
+         main_frame,
+         text=f"Agregar Tarjeta para {cliente.nombre}",
+         font=ctk.CTkFont(size=18, weight="bold")
+         )
+      title_label.pack(pady=(10, 30))
+
+    # Variables
+      numero_var = ctk.StringVar()
+      cvv_var = ctk.StringVar()
+      banco_var = ctk.StringVar(value="Banco Nacional")
+
+    # Campos del formulario
+    # Número de tarjeta
+      numero_label = ctk.CTkLabel(main_frame, text="Número de Tarjeta:", font=ctk.CTkFont(size=14))
+      numero_label.pack(anchor="w", padx=20, pady=(15, 5))
+
+      numero_entry = ctk.CTkEntry(
+         main_frame,
+         textvariable=numero_var,
+         height=35,
+         font=ctk.CTkFont(size=12),
+         placeholder_text="1234567812345678 (15 o 16 dígitos)"
+         )
+      numero_entry.pack(fill="x", padx=20, pady=(0, 10))
+      numero_entry.focus()
+
+    # CVV
+      cvv_label = ctk.CTkLabel(main_frame, text="Código de Seguridad (CVV):", font=ctk.CTkFont(size=14))
+      cvv_label.pack(anchor="w", padx=20, pady=(15, 5))
+
+      cvv_entry = ctk.CTkEntry(
+         main_frame,
+         textvariable=cvv_var,
+         height=35,
+         font=ctk.CTkFont(size=12),
+         placeholder_text="123 (3 dígitos)",
+         show="*"
+         )
+      cvv_entry.pack(fill="x", padx=20, pady=(0, 10))
+
+    # Banco
+      banco_label = ctk.CTkLabel(main_frame, text="Banco Emisor:", font=ctk.CTkFont(size=14))
+      banco_label.pack(anchor="w", padx=20, pady=(15, 5))
+
+      banco_menu = ctk.CTkOptionMenu(
+         main_frame,
+         values=["Banco Nacional", "Banco de Costa Rica", "BAC San José", "Scotiabank", "Banco Popular", "Davivienda", "Otro"],
+         variable=banco_var,
+         height=35
+         )
+      banco_menu.pack(fill="x", padx=20, pady=(0, 15))
+
+    # Información de seguridad
+      info_frame = ctk.CTkFrame(main_frame)
+      info_frame.pack(fill="x", padx=20, pady=10)
+
+      info_label = ctk.CTkLabel(
+         info_frame,
+         text="🔒 La información de la tarjeta se almacena de forma segura.\nSolo se mostrarán los últimos 4 dígitos para identificación.",
+         font=ctk.CTkFont(size=11),
+         text_color=("gray60", "gray40"),
+         wraplength=400
+         )
+      info_label.pack(pady=10)
+
+    # Botones
+      buttons_frame = ctk.CTkFrame(main_frame)
+      buttons_frame.pack(fill="x", padx=20, pady=20)
+
+      btn_cancelar = ctk.CTkButton(
+         buttons_frame,
+         text="❌ Cancelar",
+         command=modal_nueva_tarjeta.destroy,
+         height=40,
+         fg_color=("gray70", "gray30")
+         )
+      btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
+
+      btn_guardar = ctk.CTkButton(
+         buttons_frame,
+         text="💾 Guardar Tarjeta",
+         command=lambda: self.guardar_nueva_tarjeta(
+             modal_nueva_tarjeta, cliente, numero_var.get(), cvv_var.get(), banco_var.get()
+            ),
+          height=40,
+          font=ctk.CTkFont(size=14, weight="bold")
+            )
+      btn_guardar.pack(side="right", padx=20, pady=15)
+    def guardar_nueva_tarjeta(self, modal, cliente, numero, cvv, banco):
+      """Guardar nueva tarjeta para el cliente"""
+   
+      numero = numero.strip().replace(" ", "").replace("-", "")
+      cvv = cvv.strip()
+      banco = banco.strip()
+
+    # Validaciones
+      errores = []
+      
+      if not numero or not numero.isdigit():
+         errores.append("• El número de tarjeta debe contener solo dígitos")
+      elif len(numero) not in [15, 16]:
+         errores.append("• El número de tarjeta debe tener 15 o 16 dígitos")
+
+      if not cvv or not cvv.isdigit() or len(cvv) != 3:
+         errores.append("• El CVV debe ser un número de 3 dígitos")
+
+      if not banco:
+         errores.append("• Debe seleccionar un banco")   
+
+    # Verificar si la tarjeta ya existe
+      if hasattr(self, 'gestion_tarjetas'):
+          for tarjeta in self.gestion_tarjetas.tarjetas:
+              if tarjeta.numero_tarjeta == numero:
+                  errores.append("• Esta tarjeta ya está registrada en el sistema")
+                  break
+
+      if errores:
+         mensaje_error = "Por favor corrige los siguientes errores:\n\n" + "\n".join(errores)
+         messagebox.showerror("Errores de validación", mensaje_error)
+         return
+
+      try:
+        # Registrar la tarjeta usando el gestor
+          if hasattr(self, 'gestion_tarjetas'):
+             resultado = self.gestion_tarjetas.registrar_tarjeta(
+                 id_usuario=cliente.id_cliente,
+                 numero=numero,
+                 codigo=cvv,
+                 banco=banco
+                 )
+
+             if resultado:
+                 messagebox.showinfo(
+                     "Tarjeta Agregada",
+                     f"Tarjeta terminada en {numero[-4:]} agregada exitosamente!\n\n"
+                     f"Banco: {banco}\n"
+                     f"Cliente: {cliente.nombre} {cliente.apellido}"
+                 )
+
+                 modal.destroy()
+                 self.cargar_tarjetas_cliente(cliente)  # Refrescar lista
+             else:
+                 messagebox.showerror("Error", "No se pudo agregar la tarjeta")
+          else:
+             messagebox.showerror("Error", "Sistema de tarjetas no disponible")
+
+      except Exception as e:
+        messagebox.showerror("Error", f"Error al agregar tarjeta: {str(e)}")
+    def confirmar_eliminar_tarjeta(self, tarjeta):
+      """Confirmar eliminación de tarjeta"""
+   
+    
+      respuesta = messagebox.askyesno(
+         "Confirmar Eliminación",
+         f"¿Estás seguro de que deseas eliminar esta tarjeta?\n\n"
+         f"Tarjeta: **** **** **** {tarjeta.numero_tarjeta[-4:]}\n"
+         f"Banco: {tarjeta.banco}\n\n"
+         f"Esta acción no se puede deshacer."
+         )
+
+      if respuesta:
+          try:
+              if hasattr(self, 'gestion_tarjetas'):
+                  resultado = self.gestion_tarjetas.eliminar_tarjeta(
+                     tarjeta.id_usuario,
+                     tarjeta.numero_tarjeta,
+                     tarjeta.codigo
+                     )
+
+                  if resultado:
+                     messagebox.showinfo("Tarjeta Eliminada", "Tarjeta eliminada exitosamente")
+                     # Buscar el cliente para refrescar la lista
+                     cliente = next(
+                         (c for c in self.gestion_clientes.clientes if c.id_cliente == tarjeta.id_usuario),
+                         None
+                         )
+                     if cliente:
+                        self.cargar_tarjetas_cliente(cliente)
+                  else:
+                     messagebox.showerror("Error", "No se pudo eliminar la tarjeta")
+              else:
+                 messagebox.showerror("Error", "Sistema de tarjetas no disponible")
+
+          except Exception as e:
+             messagebox.showerror("Error", f"Error al eliminar tarjeta: {str(e)}")
+
+      
+
     def salir_aplicacion(self):
         """Confirmar y salir de la aplicación"""
         if messagebox.askyesno("Confirmar Salida", "¿Estás seguro de que deseas salir?"):
