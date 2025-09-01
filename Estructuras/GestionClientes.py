@@ -49,7 +49,15 @@ class GestionClientes:
                     c.direccion_envio,
                     c.fecha_registro
                 ])
- 
+    @staticmethod
+    def formatear_id(id_cliente):
+        if id_cliente is None:
+            return "N/A"
+        
+        id_str = str(id_cliente)
+        if len(id_str) > 10:
+            return id_str[:8] + "..."
+        return id_str
     def registrar_cliente(self, nombre, id, password, apellido, telefono, correo, direccion_envio, fecha_registro):
         
         for c in self.clientes:

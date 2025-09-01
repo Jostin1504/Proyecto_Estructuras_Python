@@ -29,14 +29,13 @@ class SistemaCompraModerno:
         self.root.title("🛒 Sistema de Compra Profesional")
         self.root.geometry("1200x800")
         self.centrar_ventana()
+        self.root.minsize(1000,700)
         self.usuario_actual = None
         self.carrito = None
         self.inventario = ListaInventario()
         self.gestion_clientes = GestionClientes("clientes.csv")
         self.gestion_tarjetas = GestionTarjetas("tarjetas.csv",self.gestion_clientes)
         self.inicializar_inventario()
-        self.content_frame = ctk.CTkFrame(self.root)
-        self.content_frame.pack(fill="both", expand=True)
         
         self.crear_interfaz_principal()
         
@@ -54,7 +53,7 @@ class SistemaCompraModerno:
         
         
         self.main_container = ctk.CTkFrame(self.root)
-        self.main_container.pack(fill="both", expand=True, padx=10, pady=10)
+        self.main_container.pack(fill="both", expand=True, padx=5, pady=10)
         
         
         self.main_container.grid_columnconfigure(1, weight=1)
@@ -77,7 +76,7 @@ class SistemaCompraModerno:
             text="🛒 Sistema Compra", 
             font=ctk.CTkFont(size=20, weight="bold")
         )
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 30))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(15, 20))
         botones_menu = [
             ("🏠 Inicio", self.mostrar_bienvenida),
             ("👤 Gestión Clientes", self.mostrar_gestion_clientes),
@@ -1223,134 +1222,139 @@ class SistemaCompraModerno:
             
             # Cargar la lista inicial de clientes
             self.actualizar_lista_clientes()
+          
 
     def actualizar_lista_clientes(self):
         """Actualizar la lista visual de clientes"""
-        # Verificar que lista_frame existe
+    # Verificar que lista_frame existe
         if not hasattr(self, 'lista_frame'):
-            return
-        
-        # Limpiar la lista actual
+          return
+    
+    # Limpiar la lista actual
         for widget in self.lista_frame.winfo_children():
-            widget.destroy()
+           widget.destroy()
 
-        # Verificar si hay clientes registrados
+    # Verificar si hay clientes registrados
         if not hasattr(self, 'gestion_clientes') or not self.gestion_clientes.clientes:
-            # Mostrar mensaje cuando no hay clientes
-            placeholder = ctk.CTkLabel(
-                self.lista_frame,
-                text="No hay clientes registrados. Haz clic en 'Nuevo Cliente' para comenzar.",
-                font=ctk.CTkFont(size=14),
-                text_color=("gray60", "gray40")
-                )
-            placeholder.pack(pady=50)
-            return
+        # Mostrar mensaje cuando no hay clientes
+          placeholder = ctk.CTkLabel(
+              self.lista_frame,
+              text="No hay clientes registrados. Haz clic en 'Nuevo Cliente' para comenzar.",
+              font=ctk.CTkFont(size=14),
+              text_color=("gray60", "gray40")
+               )
+          placeholder.pack(pady=50)
+          return
 
-        # Headers de la tabla
+    # Headers de la tabla - CORREGIDOS
         headers_frame = ctk.CTkFrame(self.lista_frame)
         headers_frame.pack(fill="x", padx=10, pady=(5, 15))
 
-        headers = ["ID Cliente", "Nombre", "Apellido", "Teléfono", "Correo", "Fecha Registro", "Acciones"]
-        header_widths = [100, 120, 120, 100, 180, 120, 120]
+        headers = ["ID", "Nombre", "Apellido", "Teléfono", "Correo", "Fecha", "Acciones"]  # IDs más cortos
+        header_widths = [80, 120, 120, 100, 180, 100, 120]  # ID más pequeño
 
         for i, (header, width) in enumerate(zip(headers, header_widths)):
             header_label = ctk.CTkLabel(
-                headers_frame,
-                text=header,
-                font=ctk.CTkFont(size=12, weight="bold"),
-                width=width
-                )
+              headers_frame,
+              text=header,
+              font=ctk.CTkFont(size=12, weight="bold"),
+              width=width
+              )
             header_label.grid(row=0, column=i, padx=5, pady=10, sticky="w")
-
-        # Mostrar cada cliente
+    
+    # Mostrar cada cliente
         for i, cliente in enumerate(self.gestion_clientes.clientes):
-            # Frame para cada cliente
+        # Frame para cada cliente
             cliente_frame = ctk.CTkFrame(self.lista_frame)
             cliente_frame.pack(fill="x", padx=10, pady=2)
-            
-            # Datos del cliente
+        # Datos del cliente - ID FORMATEADo
             datos = [
-                getattr(cliente, 'id_cliente', 'N/A'),
-                getattr(cliente, 'nombre', 'N/A'),
-                getattr(cliente, 'apellido', 'N/A'),
-                getattr(cliente, 'telefono', 'N/A'),
-                getattr(cliente, 'correo', 'N/A'),
-                str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
-              ]
-            
-            # Mostrar datos en columnas
+              self.gestion_clientes.formatear_id(getattr(cliente, 'id_cliente', 'N/A')),  # ID ACORTADO
+              getattr(cliente, 'nombre', 'N/A'),
+              getattr(cliente, 'apellido', 'N/A'),
+              getattr(cliente, 'telefono', 'N/A'),
+              getattr(cliente, 'correo', 'N/A'),
+              str(getattr(cliente, 'fecha_registro', 'N/A'))[:10],  # Solo la fecha
+            ]
+        
+        # Mostrar datos en columnas
             for j, (dato, width) in enumerate(zip(datos, header_widths[:-1])):
-                dato_label = ctk.CTkLabel(
+            # Configuración especial para el ID
+                 if j == 0:  # Columna ID
+                   dato_label = ctk.CTkLabel(
+                       cliente_frame,
+                       text=str(dato),
+                       font=ctk.CTkFont(size=10, family="monospace"),  # Fuente monospace más pequeña
+                       width=width,
+                       anchor="w",
+                       text_color=("gray50", "gray60")  # Color más suave
+                  )
+                 else:
+                     dato_label = ctk.CTkLabel(
                     cliente_frame,
                     text=str(dato),
                     font=ctk.CTkFont(size=11),
                     width=width,
                     anchor="w"
-                )
-                dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
-            
-            # Botones de acción
+                  )
+                 dato_label.grid(row=0, column=j, padx=5, pady=8, sticky="w")
+        
+        # Botones de acción - ORGANIZADOS CORRECTAMENTE
             acciones_frame = ctk.CTkFrame(cliente_frame)
             acciones_frame.grid(row=0, column=len(datos), padx=5, pady=5, sticky="e")
-            
-            # Botón Ver/Editar
-            btn_ver = ctk.CTkButton(
-                acciones_frame,
-                text="👁️",
-                width=30,
-                height=25,
-                command=lambda c=cliente: self.ver_cliente(c),
-                font=ctk.CTkFont(size=12)
-                )
-            btn_ver.grid(row=0, column=0, padx=2, pady=5)
-
+        
+        # Configurar grid del frame de acciones
             acciones_frame.grid_columnconfigure(0, weight=1)
             acciones_frame.grid_columnconfigure(1, weight=1)
             acciones_frame.grid_columnconfigure(2, weight=1)
-            
-            # Botón Eliminar
-            btn_eliminar = ctk.CTkButton(
+        
+        # Botón Ver/Editar
+            btn_ver = ctk.CTkButton(
+                  acciones_frame, 
+                  text="👁️",
+                  width=30,
+                  height=25,
+                  command=lambda c=cliente: self.ver_cliente(c),
+                  font=ctk.CTkFont(size=12),
+                  fg_color=("blue", "darkblue"),
+                  hover_color=("darkblue", "blue")
+                 )
+            btn_ver.grid(row=0, column=0, padx=2, pady=5)    
+    
+        # Botón Gestionar Tarjetas
+            btn_tarjetas = ctk.CTkButton(
                 acciones_frame,
-                text="🗑️",
+                text="💳",
                 width=30,
                 height=25,
-                fg_color=("red", "darkred"),
-                hover_color=("darkred", "red"),
-                command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
-                font=ctk.CTkFont(size=12)
-              )
-            btn_eliminar.grid(row=0, column=2, padx=2, pady=5)
-            # Botón Ver/Editar
-            btn_ver = ctk.CTkButton(
-              acciones_frame,
-              text="👁️",
-              width=30,
-              height=25,
-              command=lambda c=cliente: self.ver_cliente(c),
-              font=ctk.CTkFont(size=12)
-              )
-            btn_ver.grid(row=0, column=0, padx=2, pady=5)
-        
-        # Botón Gestionar Tarjetas (NUEVO)
-            btn_tarjetas = ctk.CTkButton(
-              acciones_frame,
-              text="💳",
-              width=30,
-              height=25,
-              command=lambda c=cliente: self.gestionar_tarjetas_cliente(c),
-              font=ctk.CTkFont(size=12),
-              fg_color=("green", "darkgreen"),
-            hover_color=("darkgreen", "green")
-            )
-            btn_tarjetas.grid(row=0, column=1, padx=2, pady=5)
+                command=lambda c=cliente: self.gestionar_tarjetas_cliente(c),
+                font=ctk.CTkFont(size=12),
+                fg_color=("green", "darkgreen"),
+                hover_color=("darkgreen", "green")
+                  )
+            btn_tarjetas.grid(row=0, column=1, padx=2, pady=5)    
+            
+        # Botón Eliminar
+            btn_eliminar = ctk.CTkButton(
+                 acciones_frame,
+                 text="🗑️",
+                 width=30,
+                 height=25,
+                 fg_color=("red", "darkred"),
+                 hover_color=("darkred", "red"),
+                 command=lambda c=cliente: self.confirmar_eliminar_cliente(c),
+                 font=ctk.CTkFont(size=12)
+                   )
+            btn_eliminar.grid(row=0, column=2, padx=2, pady=5)   
 
-            # Contador total de clientes
-            total_label = ctk.CTkLabel(
-                self.lista_frame,
-                text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
-                font=ctk.CTkFont(size=12, weight="bold")
-                )
-            total_label.pack(pady=10)
+    # Contador total de clientes
+        total_label = ctk.CTkLabel(
+           self.lista_frame,
+           text=f"Total de clientes: {len(self.gestion_clientes.clientes)}",
+           font=ctk.CTkFont(size=12, weight="bold")
+           )
+        total_label.pack(pady=10)
+    
 
     # Método auxiliar para asegurar que limpiar_contenido existe
     def limpiar_contenido(self):
