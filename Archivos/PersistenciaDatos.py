@@ -1,0 +1,127 @@
+import csv
+from Clases_Base.Cliente import Cliente
+from Clases_Base.Tarjeta import Tarjeta
+from Clases_Base.articulo import Articulo
+from Clases_Base.Registro import Registro
+from Estructuras.Carrodecompra import Carrodecompra
+
+class Archivo:
+    Clientes_csv = 'Archivos/Clientes.csv'
+    Tarjetas_csv = 'Archivos/Tarjetas.csv'
+    Articulos_csv = 'Archivos/Articulos.csv'
+    Registros_csv = 'Archivos/Registros.csv'
+    Carrodecompra_csv = 'Archivos/Carrodecompra.csv'
+
+    def guardar_lista(objetos, path: str, is_cliente=False):
+        if not objetos:
+            return
+        fieldnames = list(objetos[0].parametros().keys()) if is_cliente else list(objetos[0].to_dict().keys())
+        with open(path, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for obj in objetos:
+                row = obj.parametros() if is_cliente else obj.to_dict()
+                writer.writerow(row)
+
+    def cargar_lista(cls, path: str, is_cliente=False):
+        objetos = []
+        try:
+            with open(path, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    obj = cls.parametros_data(row) if is_cliente else cls.from_dict(row)
+                    objetos.append(obj)
+        except FileNotFoundError:
+            pass
+        return objetos
+    
+    def guardar_clientes(clientes):
+        Archivo.guardar_lista(clientes, Archivo.Clientes_csv, is_cliente=True)
+
+    def cargar_clientes():
+        return Archivo.cargar_lista(Cliente, Archivo.Clientes_csv, is_cliente=True)
+    
+    def guardar_tarjetas(tarjetas):
+        Archivo.guardar_lista(tarjetas, Archivo.Tarjetas_csv)
+
+    def cargar_tarjetas():
+        return Archivo.cargar_lista(Tarjeta, Archivo.Tarjetas_csv)
+    
+    def guardar_articulos(articulos):
+        Archivo.guardar_lista(articulos, Archivo.Articulos_csv)
+
+    def cargar_articulos():
+        return Archivo.cargar_lista(Articulo, Archivo.Articulos_csv)
+    
+    def guardar_carritos(carritos):
+        fieldnames = ["id_carrito", "id_cliente", "id_producto","nombre","cantidad","precio_unitario","subtotal"]
+        with open(Archivo.Carrodecompra_csv, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for carrito in carritos:
+                for item in carrito.Parametros_csv():
+                    writer.writerow({
+                        "id_carrito": carrito.id_carrito,
+                        "id_cliente": carrito.cliente.id_cliente,
+                        **item
+                    })
+
+    def cargar_carritos():
+        carritos_dict = {}
+        clientes = Archivo.cargar_clientes()
+        try:
+            with open(Archivo.Carrodecompra_csv, newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    carrito_id = row["id_carrito"]
+                    cliente_id = row["id_cliente"]
+                    cliente = next((c for c in clientes if c.id_cliente == cliente_id), None)
+                    if not cliente:
+                        continue
+                    if carrito_id not in carritos_dict:
+                        carrito = Carrodecompra(cliente)
+                        carrito.id_carrito = carrito_id
+                        carritos_dict[carrito_id] = carrito
+                    else:
+                        carrito = carritos_dict[carrito_id]
+                    
+                    carrito.agregar_item(
+                        id_producto=row["id_producto"],
+                        nombre=row["nombre"],
+                        cantidad=int(row["cantidad"]),
+                        precio_unitario=float(row["precio_unitario"])
+                    )
+        except FileNotFoundError:
+            pass
+        return list(carritos_dict.values())
+    
+    def guardar_registros(registros):
+        Archivo.guardar_lista(registros, Archivo.Registros_csv)
+
+    def cargar_registros():
+        registros = []
+        try:
+            clientes = Archivo.cargar_clientes()
+            carritos = Archivo.cargar_carritos()
+            with open(Archivo.Registros_csv, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    registros.append(Registro.from_dict(row, clientes, carritos))
+        except FileNotFoundError:
+            pass
+        return registros
+    
+    def guardar_datos(clientes, tarjetas, articulos, carritos, registros):
+        Archivo.guardar_clientes(clientes)
+        Archivo.guardar_tarjetas(tarjetas)
+        Archivo.guardar_articulos(articulos)
+        Archivo.guardar_carritos(carritos)
+        Archivo.guardar_registros(registros)
+
+    def cargar_datos():
+        clientes = Archivo.cargar_clientes()
+        tarjetas = Archivo.cargar_tarjetas()
+        articulos = Archivo.cargar_articulos()
+        carritos = Archivo.cargar_carritos()
+        registros = Archivo.cargar_registros()
+        return clientes, tarjetas, articulos, carritos, registros
