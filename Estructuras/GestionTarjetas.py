@@ -18,6 +18,9 @@ class GestionTarjetas:
         self.gestor_clientes = gestor_clientes
         self.tarjetas = []
         self.cargar_tarjetas()
+        self.saldo = 0.0
+        #esto es para restringir las recargas posibles por monto
+        self.limite_recargas = {200: 3, 400:3, 600:2, 1000: 2}
 
     def cargar_tarjetas(self):
         self.tarjetas = []
@@ -93,3 +96,22 @@ class GestionTarjetas:
         cliente.tarjetas.remove(tarjeta)
         self.guardar_tarjetas()
         return True
+    
+    #para la recarga de tarjetas
+    def recargar_tarjeta(self, tarjeta, monto):
+        if monto not in self.limite_recargas:
+            raise ValueError(f"Monto de recarga inválido: {monto}")
+
+        #verifica que no pase el limite establecido por monto
+        if tarjeta.recargas_realizadas >= self.limite_recargas[monto]:
+            raise ValueError(f"Límite de recargas alcanzado para {monto}")
+        else:
+            tarjeta.saldo += monto
+            tarjeta.recargas_realizadas[monto] += 1
+
+            recargas_restantes = self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
+            return (f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}")
+        
+    def recargas_restantes(self, tarjeta):
+        return {monto: self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
+                for monto in self.limite_recargas}

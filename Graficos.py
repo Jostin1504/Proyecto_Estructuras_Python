@@ -2064,6 +2064,7 @@ class SistemaCompraModerno:
                  numero=numero,
                  codigo=cvv,
                  banco=banco
+                 saldo = 0.0
                  )
 
              if resultado:
@@ -2102,6 +2103,7 @@ class SistemaCompraModerno:
                      tarjeta.id_usuario,
                      tarjeta.numero_tarjeta,
                      tarjeta.codigo
+                     tarjeta.saldo
                      )
 
                   if resultado:
