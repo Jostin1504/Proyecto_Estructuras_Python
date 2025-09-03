@@ -687,6 +687,7 @@ class SistemaCompraModerno:
       except Exception as e:
          messagebox.showerror("Error", f"Error al agregar producto: {str(e)}")
          print(f"Error detallado: {e}")
+
     def actualizar_vista_inventario(self):
       """Actualizar la vista del inventario después de agregar un producto"""
       try:
@@ -1136,6 +1137,7 @@ class SistemaCompraModerno:
             
       except Exception as e:
         messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
+
     def mostrar_gestion_clientes(self):
             """Mostrar la interfaz de gestión de clientes"""
             # Limpiar el contenido actual
@@ -1345,6 +1347,7 @@ class SistemaCompraModerno:
             # Si content_frame no existe, créarlo
             self.content_frame = ctk.CTkFrame(self.root)
             self.content_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
     def ver_cliente(self, cliente):
         """Mostrar detalles del cliente"""
         from tkinter import messagebox
@@ -1379,6 +1382,7 @@ class SistemaCompraModerno:
                 self.gestion_clientes.guardar_clientes()
                 messagebox.showinfo("Cliente Eliminado", f"Cliente {cliente.nombre} eliminado exitosamente")
                 self.actualizar_lista_clientes()  # Refrescar la lista
+
     def buscar_cliente(self):
         """Abrir diálogo para buscar cliente"""
         # Verificar si ya hay una ventana de búsqueda abierta
@@ -1817,6 +1821,7 @@ class SistemaCompraModerno:
          fg_color=("gray70", "gray30")
          )
       btn_cerrar.pack(pady=10)
+
     def cargar_tarjetas_cliente(self, cliente):
       """Cargar y mostrar las tarjetas del cliente"""
     # Limpiar frame
@@ -1843,8 +1848,9 @@ class SistemaCompraModerno:
 
     # Mostrar cada tarjeta
       for i, tarjeta in enumerate(tarjetas_cliente):
-         self.crear_tarjeta_visual(tarjeta, i + 1) 
-    def crear_tarjeta_visual(self, tarjeta, numero_tarjeta):
+         self.crear_tarjeta_visual(tarjeta, i + 1, tarjeta.saldo)
+
+    def crear_tarjeta_visual(self, tarjeta, numero_tarjeta, saldo):
       """Crear representación visual de una tarjeta"""
     # Frame de la tarjeta
       card_frame = ctk.CTkFrame(self.tarjetas_list_frame)
@@ -1906,53 +1912,72 @@ class SistemaCompraModerno:
       btn_eliminar.pack(pady=5)  
 
 
-    def abrir_recarga(self, tarjeta):
-    # Crear ventana modal
-      modal = ctk.CTkToplevel(self)
-      modal.title("Recargar Tarjeta")
-      modal.geometry("400x400")
-      modal.resizable(False, False)
-    
-      modal.grab_set()
+    def abrir_modal_recarga(self, tarjeta):
+        # Crear ventana modal
+        modal = ctk.CTkToplevel()
+        modal.title("Recargar Tarjeta")
+        modal.geometry("350x400")
+        modal.resizable(True, True)
+
+        modal.grab_set()
+        modal.focus_force()  # Fuerza el foco
+        modal.lift()
+        modal.attributes("-topmost", True)
+        modal.after(100, lambda: modal.attributes("-topmost", False))
+
     # Título
-      titulo = ctk.CTkLabel(modal, text="💳 Recargar Tarjeta", 
-                         font=ctk.CTkFont(size=20, weight="bold"))
-      titulo.pack(pady=20)
+        titulo = ctk.CTkLabel(modal, text="💳 Recargar Tarjeta", 
+        font=ctk.CTkFont(size=18, weight="bold"))
+        titulo.pack(pady=20)
     
-    # Mostrar info de la tarjeta
-      info_tarjeta = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero[-4:]}")
-      info_tarjeta.pack(pady=5)
+        # Info tarjeta y saldo
+        info = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero_tarjeta[-4:]}")
+        info.pack(pady=5)
     
-      saldo_actual = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}", 
-                               font=ctk.CTkFont(size=16))
-      saldo_actual.pack(pady=10)
+        saldo_label = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}")
+        saldo_label.pack(pady=5)
     
-    # Frame para los botones de recarga
-      botones_frame = ctk.CTkFrame(modal)
-      botones_frame.pack(pady=20, padx=30, fill="x")
+    # Campo para ingresar monto
+        ctk.CTkLabel(modal, text="Ingrese el monto a recargar:").pack(pady=(15,5))
     
-    # Los 4 botones de recarga
-      montos = [200, 400, 800, 1000]
-      colores = [("green", "lightgreen"), ("blue", "lightblue"), 
-               ("orange", "lightyellow"), ("purple", "lightpink")]
+        entry_monto = ctk.CTkEntry(modal, placeholder_text="Máximo $3000")
+        entry_monto.pack(pady=5)
     
-      for i, monto in enumerate(montos):
-          btn = ctk.CTkButton(
-              botones_frame,
-              text=f"Recargar ${monto}",
-              command=lambda m=monto: self.realizar_recarga(tarjeta, m, modal, saldo_actual),
-              height=40,
-              fg_color=colores[i],
-              font=ctk.CTkFont(size=14)
-            )
-          btn.pack(pady=8, padx=20, fill="x")
+    # Botón recargar
+        btn_recargar = ctk.CTkButton(
+            modal, 
+            text="Recargar",
+            command=lambda: self.procesar_recarga(tarjeta, entry_monto, modal, saldo_label)
+        )
+        btn_recargar.pack(pady=15)
     
     # Botón cerrar
-      btn_cerrar = ctk.CTkButton(modal, text="Cerrar", 
+        btn_cerrar = ctk.CTkButton(modal, text="Cerrar", 
                               command=modal.destroy,
-                              fg_color=("gray", "darkgray"))
-      btn_cerrar.pack(pady=20) 
-    
+                              fg_color="gray")
+        btn_cerrar.pack(pady=5)
+
+    def procesar_recarga(self, tarjeta, entry_monto, modal, saldo_label):
+        try:
+            monto = float(entry_monto.get())
+            
+            mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
+
+            saldo_label.configure(text=f"Saldo actual: ${tarjeta.saldo}")
+
+            entry_monto.delete(0, 'end')
+            self.mostrar_exito(f"Recarga exitosa de ${monto}")
+
+        except ValueError:
+            self.mostrar_error("Ingrese un número válido")
+
+    def mostrar_error(self, mensaje):
+      # Mensaje de error simple
+        print(f"Error: {mensaje}")  # O usar messagebox si prefieres
+
+    def mostrar_exito(self, mensaje):
+      # Mensaje de éxito
+        print(f"Éxito: {mensaje}")
 
     def abrir_modal_nueva_tarjeta(self, cliente):
       """Abrir modal para agregar nueva tarjeta"""
@@ -2102,7 +2127,8 @@ class SistemaCompraModerno:
                  id_usuario=cliente.id_cliente,
                  numero=numero,
                  codigo=cvv,
-                 banco=banco
+                 banco=banco,
+                 saldo=0
                  )
 
              if resultado:
@@ -2123,14 +2149,28 @@ class SistemaCompraModerno:
       except Exception as e:
         messagebox.showerror("Error", f"Error al agregar tarjeta: {str(e)}")
 
-    def realizar_recarga(self, tarjeta, monto, modal, label_saldo):
-        exito, mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
-        if exito:
-            messagebox.showinfo("Recarga Exitosa", mensaje)
-            label_saldo.config(text=f"Saldo: ${tarjeta.saldo}")
-        else:
-            messagebox.showerror("Error", mensaje)
-          
+    def procesar_recarga(self, tarjeta, entry_monto, modal, saldo_label):
+        try:
+            monto = float(entry_monto.get())
+
+            # Usar TU GestionTarjetas existente
+            mensaje = self.gestor_tarjetas.recargar_tarjeta(tarjeta, monto)
+
+
+        # Actualizar saldo en pantalla
+            saldo_label.configure(text=f"Saldo actual: ${tarjeta.saldo}")
+            entry_monto.delete(0, 'end')
+            self.mostrar_exito(mensaje)
+
+        except ValueError as e:
+            self.mostrar_error(str(e))  # Mostrará el mensaje específico
+        except Exception as e:
+            self.mostrar_error(f"Error inesperado: {str(e)}")
+        
+        # Actualizar saldo en pantalla
+        saldo_label.configure(text=f"Saldo actual: ${tarjeta.saldo}")
+        entry_monto.delete(0, 'end')
+        self.mostrar_exito(mensaje)
 
     def confirmar_eliminar_tarjeta(self, tarjeta):
       """Confirmar eliminación de tarjeta"""

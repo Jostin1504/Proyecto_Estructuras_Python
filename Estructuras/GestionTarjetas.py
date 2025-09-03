@@ -18,23 +18,20 @@ class GestionTarjetas:
         self.gestor_clientes = gestor_clientes
         self.tarjetas = []
         self.cargar_tarjetas()
-        self.saldo = 0.0
-        #esto es para restringir las recargas posibles por monto
-        self.limite_recargas = {200: 3, 400:3, 600:2, 1000: 2}
-
+     
     def cargar_tarjetas(self):
         self.tarjetas = []
         try:
             with open(self.archivo_tarjetas, newline='', encoding='utf-8') as f:
                 reader = csv.reader(f)
-                for num, cvv, banco, id_usuario in reader:
-                    tarjeta = TarjetaDeCompra(num, cvv, banco, id_usuario)
+                for num, cvv, banco, id_usuario, saldo in reader:
+                    tarjeta = TarjetaDeCompra(num, cvv, banco, id_usuario, float(saldo))
                     self.tarjetas.append(tarjeta)
                     cliente = None
                     for c in self.gestor_clientes.clientes:
-                         if str(c.id_cliente).strip() == str(id_usuario).strip():
-                             cliente = c
-                             break
+                        if str(c.id_cliente).strip() == str(id_usuario).strip():
+                            cliente = c
+                            break
                     if cliente and hasattr(cliente, 'tarjetas_compra'):
                         cliente.tarjetas_compra.append(tarjeta)
         except FileNotFoundError:
@@ -44,40 +41,37 @@ class GestionTarjetas:
         with open(self.archivo_tarjetas, 'w', newline='', encoding='utf-8') as archivo:
             escritor = csv.writer(archivo)
             for t in self.tarjetas:
-                escritor.writerow([t.numero_tarjeta, t.codigo, t.banco, t.id_usuario])
+                escritor.writerow([t.numero_tarjeta, t.codigo, t.banco, t.id_usuario, t.saldo])
 
-    def registrar_tarjeta(self, id_usuario, numero, codigo, banco):
-       if len(numero) not in (15, 16):
-         raise ValueError(f"Número de tarjeta inválido: {numero}")
-       if len(codigo) != 3:
-         raise ValueError(f"Código de seguridad inválido: {codigo}")
-     
-    # CORREGIDO: Buscar cliente por ID directamente (con conversión de tipos)
-       cliente = None
-       for c in self.gestor_clientes.clientes:
-        # Comparar tanto como string como valor original por si hay diferencias de tipo
-         if str(c.id_cliente).strip() == str(id_usuario).strip():
-             cliente = c
-         break
-    
-       if not cliente:
-        raise ValueError(f"No existe el cliente con id '{id_usuario}'")
-    
-       tarjeta = TarjetaDeCompra(numero, codigo, banco, id_usuario)
-       self.tarjetas.append(tarjeta)
-    
-    # Agregar tarjeta a la lista del cliente si tiene esa propiedad
-       if hasattr(cliente, 'tarjetas'):
-          cliente.tarjetas.append(tarjeta)
-       elif hasattr(cliente, 'tarjetas_compra'):
-          cliente.tarjetas_compra.append(tarjeta)
-    
-       self.guardar_tarjetas()
-       return True
+    def registrar_tarjeta(self, id_usuario, numero, codigo, banco, saldo):
+        if len(numero) not in (15, 16):
+            raise ValueError(f"Número de tarjeta inválido: {numero}")
+        if len(codigo) != 3:
+            raise ValueError(f"Código de seguridad inválido: {codigo}")
+
+        cliente = None
+        for c in self.gestor_clientes.clientes:
+            if str(c.id_cliente).strip() == str(id_usuario).strip():
+                cliente = c
+                break
+
+        if not cliente:
+            raise ValueError(f"No existe el cliente con id '{id_usuario}'")
+
+        tarjeta = TarjetaDeCompra(numero, codigo, banco, id_usuario, saldo)
+        self.tarjetas.append(tarjeta)
+
+        if hasattr(cliente, 'tarjetas'):
+            cliente.tarjetas.append(tarjeta)
+        elif hasattr(cliente, 'tarjetas_compra'):
+            cliente.tarjetas_compra.append(tarjeta)
+
+        self.guardar_tarjetas()
+        return True
 
     def autenticar_tarjeta(self, numero, codigo):
         for t in self.tarjetas:
-            if t.numero == numero and t.codigo == codigo:
+            if t.numero_tarjeta == numero and t.codigo == codigo:
                 return t
         return None
 
@@ -87,31 +81,23 @@ class GestionTarjetas:
             raise ValueError(f"No existe el cliente con id '{id_usuario}'")
         tarjeta = next(
             (t for t in self.tarjetas
-             if t.numero == numero and t.codigo == codigo and t.id_usuario == id_usuario),
+             if t.numero_tarjeta == numero and t.codigo == codigo and t.id_usuario == id_usuario),
             None
         )
         if not tarjeta:
             return False
         self.tarjetas.remove(tarjeta)
-        cliente.tarjetas.remove(tarjeta)
+        if hasattr(cliente, 'tarjetas'):
+            cliente.tarjetas.remove(tarjeta)
+        elif hasattr(cliente, 'tarjetas_compra'):
+            cliente.tarjetas_compra.remove(tarjeta)
         self.guardar_tarjetas()
         return True
     
-    #para la recarga de tarjetas
+    # Recarga de tarjeta con monto libre (máx $3000)
     def recargar_tarjeta(self, tarjeta, monto):
-        if monto not in self.limite_recargas:
-            raise ValueError(f"Monto de recarga inválido: {monto}")
-
-        #verifica que no pase el limite establecido por monto
-        if tarjeta.recargas_realizadas >= self.limite_recargas[monto]:
-            raise ValueError(f"Límite de recargas alcanzado para {monto}")
-        else:
-            tarjeta.saldo += monto
-            tarjeta.recargas_realizadas[monto] += 1
-
-            recargas_restantes = self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
-            return (f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}")
-        
-    def recargas_restantes(self, tarjeta):
-        return {monto: self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
-                for monto in self.limite_recargas}
+        if monto <= 0 or monto > 3000:
+            raise ValueError("El monto debe ser mayor a 0 y máximo $3000")
+        tarjeta.saldo += monto
+        self.guardar_tarjetas()
+        return f"Recarga exitosa de ${monto}. Nuevo saldo: ${tarjeta.saldo}"
