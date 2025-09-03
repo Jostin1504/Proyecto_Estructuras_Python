@@ -1,6 +1,15 @@
 import csv
-from Tarjeta import TarjetaDeCompra
-from Cliente import Cliente
+import os
+import sys
+current_dir = os.path.dirname(os.path.abspath(__file__))
+clases_base_path = os.path.join(current_dir, "Clases_Base")
+sys.path.append(clases_base_path)
+estructuras_path = os.path.join(current_dir, "Estructuras")
+sys.path.append(estructuras_path)
+Proyecto_Estructuras_Python_path= os.path.join(current_dir,"Proyecto_Estructuras_Python")
+sys.path.append(Proyecto_Estructuras_Python_path)
+from Clases_Base.Tarjeta import TarjetaDeCompra
+from Clases_Base.Cliente import Cliente
 from GestionClientes import GestionClientes
 
 class GestionTarjetas:
@@ -9,6 +18,9 @@ class GestionTarjetas:
         self.gestor_clientes = gestor_clientes
         self.tarjetas = []
         self.cargar_tarjetas()
+        self.saldo = 0.0
+        #esto es para restringir las recargas posibles por monto
+        self.limite_recargas = {200: 3, 400:3, 600:2, 1000: 2}
 
     def cargar_tarjetas(self):
         self.tarjetas = []
@@ -18,9 +30,13 @@ class GestionTarjetas:
                 for num, cvv, banco, id_usuario in reader:
                     tarjeta = TarjetaDeCompra(num, cvv, banco, id_usuario)
                     self.tarjetas.append(tarjeta)
-                    cliente = self.gestor_clientes.login(id_usuario, None)
-                    if cliente:
-                        cliente.tarjetas.append(tarjeta)
+                    cliente = None
+                    for c in self.gestor_clientes.clientes:
+                         if str(c.id_cliente).strip() == str(id_usuario).strip():
+                             cliente = c
+                             break
+                    if cliente and hasattr(cliente, 'tarjetas_compra'):
+                        cliente.tarjetas_compra.append(tarjeta)
         except FileNotFoundError:
             open(self.archivo_tarjetas, 'w', encoding='utf-8').close()
 
@@ -28,21 +44,36 @@ class GestionTarjetas:
         with open(self.archivo_tarjetas, 'w', newline='', encoding='utf-8') as archivo:
             escritor = csv.writer(archivo)
             for t in self.tarjetas:
-                escritor.writerow([t.numero, t.codigo, t.banco, t.id_usuario])
+                escritor.writerow([t.numero_tarjeta, t.codigo, t.banco, t.id_usuario])
 
     def registrar_tarjeta(self, id_usuario, numero, codigo, banco):
-        if len(numero) not in (15, 16):
-            raise ValueError(f"Número de tarjeta inválido: {numero}")
-        if len(codigo) != 3:
-            raise ValueError(f"Código de seguridad inválido: {codigo}")
-        cliente = self.gestor_clientes.login(id_usuario, None)
-        if not cliente:
-            raise ValueError(f"No existe el cliente con id '{id_usuario}'")
-        tarjeta = TarjetaDeCompra(numero, codigo, banco, id_usuario)
-        self.tarjetas.append(tarjeta)
-        cliente.tarjetas.append(tarjeta)
-        self.guardar_tarjetas()
-        return True
+       if len(numero) not in (15, 16):
+         raise ValueError(f"Número de tarjeta inválido: {numero}")
+       if len(codigo) != 3:
+         raise ValueError(f"Código de seguridad inválido: {codigo}")
+     
+    # CORREGIDO: Buscar cliente por ID directamente (con conversión de tipos)
+       cliente = None
+       for c in self.gestor_clientes.clientes:
+        # Comparar tanto como string como valor original por si hay diferencias de tipo
+         if str(c.id_cliente).strip() == str(id_usuario).strip():
+             cliente = c
+         break
+    
+       if not cliente:
+        raise ValueError(f"No existe el cliente con id '{id_usuario}'")
+    
+       tarjeta = TarjetaDeCompra(numero, codigo, banco, id_usuario)
+       self.tarjetas.append(tarjeta)
+    
+    # Agregar tarjeta a la lista del cliente si tiene esa propiedad
+       if hasattr(cliente, 'tarjetas'):
+          cliente.tarjetas.append(tarjeta)
+       elif hasattr(cliente, 'tarjetas_compra'):
+          cliente.tarjetas_compra.append(tarjeta)
+    
+       self.guardar_tarjetas()
+       return True
 
     def autenticar_tarjeta(self, numero, codigo):
         for t in self.tarjetas:
@@ -65,3 +96,22 @@ class GestionTarjetas:
         cliente.tarjetas.remove(tarjeta)
         self.guardar_tarjetas()
         return True
+    
+    #para la recarga de tarjetas
+    def recargar_tarjeta(self, tarjeta, monto):
+        if monto not in self.limite_recargas:
+            raise ValueError(f"Monto de recarga inválido: {monto}")
+
+        #verifica que no pase el limite establecido por monto
+        if tarjeta.recargas_realizadas >= self.limite_recargas[monto]:
+            raise ValueError(f"Límite de recargas alcanzado para {monto}")
+        else:
+            tarjeta.saldo += monto
+            tarjeta.recargas_realizadas[monto] += 1
+
+            recargas_restantes = self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
+            return (f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}")
+        
+    def recargas_restantes(self, tarjeta):
+        return {monto: self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
+                for monto in self.limite_recargas}

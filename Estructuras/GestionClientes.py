@@ -49,7 +49,15 @@ class GestionClientes:
                     c.direccion_envio,
                     c.fecha_registro
                 ])
- 
+    @staticmethod
+    def formatear_id(id_cliente):
+        if id_cliente is None:
+            return "N/A"
+        
+        id_str = str(id_cliente)
+        if len(id_str) > 10:
+            return id_str[:8] + "..."
+        return id_str
     def registrar_cliente(self, nombre, id, password, apellido, telefono, correo, direccion_envio, fecha_registro):
         
         for c in self.clientes:
@@ -69,7 +77,7 @@ class GestionClientes:
         self.clientes.append(nuevo_cliente)
         self.guardar_clientes()
         return True
- 
+    
     def login(self, id, password):
         for c in self.clientes:
             if c.id_cliente == id and c.password == password:
