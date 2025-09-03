@@ -6,7 +6,6 @@ class TarjetaDeCompra:
         self.banco = banco
         self.id_usuario = id_usuario
         self.saldo = 0.0
-        self.recargas_realizadas = {200: 0, 400: 0, 800: 0, 1000: 0}
 
     def info_tarjeta(self):
         print(f"Tarjeta: {self.numero_tarjeta}")
@@ -21,7 +20,6 @@ class TarjetaDeCompra:
             "banco": self.banco,
             "id_usuario": self.id_usuario,
             "saldo": self.saldo,
-            "recargas_realizadas": recargas_str
         }
     
     @staticmethod
@@ -53,6 +51,7 @@ class TarjetaDeCompra:
         return (f"Tarjeta Número: {self.numero_tarjeta}\n"
                 f"Banco: {self.banco}\n"
                 f"Saldo: ${self.saldo}\n"
-                f"Recargas Realizadas: {self.recargas_realizadas}")
+        )
+
     
     
