@@ -1,4 +1,5 @@
 #La lista va a manejar pilas de articulos iguales
+
 class PilaArticulos:
     def __init__(self):
         self.items = []
@@ -15,7 +16,7 @@ class PilaArticulos:
     
     def __str__(self):
         return f" Articulos apilados: {len(self.items)}"
-
+    
 class Nodo:
     def __init__(self, articulo):
         self.dato = articulo
@@ -26,13 +27,23 @@ class Nodo:
 
         self.siguiente = None #ve la pila siguiente
         self.anterior = None  #ve la pila anterior
-        
+       
 #lista doblemente enlazada para mas practicidad
 class ListaInventario:
-    def __init__(self):
-        self.primero = None
-        self.ultimo = None
+    _instancia = None
 
+    def __new__(cls):
+        if cls._instancia is None:
+            cls._instancia = super().__new__(cls)
+            cls._instancia.primero = None
+            cls._instancia.ultimo = None
+        return cls._instancia
+    
+    def __init__(self):
+        if not hasattr(self, 'primero'):    
+            self.primero = None
+            self.ultimo = None
+        
     def agregar_articulo(self, articulo):
         """
         Agrega un artículo al inventario.
@@ -50,7 +61,6 @@ class ListaInventario:
             self.ultimo.siguiente = nuevo_nodo
             nuevo_nodo.anterior = self.ultimo
             self.ultimo = nuevo_nodo
-        
         return True  # Artículo agregado exitosamente
 
     def existe_articulo(self, nombre):
@@ -210,7 +220,7 @@ class ListaInventario:
                 actual = actual.siguiente
         return False
     def contar_productos(self):
-        """Contar productos recorriendo directamente los nodos"""
+        #"""Contar productos recorriendo directamente los nodos"""
         contador = 0
         actual = self.primero
         
@@ -229,5 +239,4 @@ class ListaInventario:
             actual = actual.siguiente
         return False
         
-
     
