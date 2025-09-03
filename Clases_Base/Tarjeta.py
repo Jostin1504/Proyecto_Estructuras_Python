@@ -7,6 +7,7 @@ class TarjetaDeCompra:
         self.id_usuario = id_usuario
         self.saldo = 0.0
         self.maximo_saldo = 3000.0
+        self.recargas_realizadas = {200:0,400:0,800:0,1000:0}
 
     def info_tarjeta(self):
         print(f"Tarjeta: {self.numero_tarjeta}")
@@ -62,6 +63,3 @@ class TarjetaDeCompra:
                 f"Banco: {self.banco}\n"
                 f"Saldo: ${self.saldo}\n"
         )
-
-    
-    
