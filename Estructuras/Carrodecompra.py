@@ -63,4 +63,23 @@ class CarroDeCompra:
             for item in self.items
         ]
 #clase donde van los articulos a comprar en primera estancia usariamos la pila aqui#
+    def to_dict(self):
+        return {
+            "id_carrito": self.id_carrito,
+            "id_cliente": self.cliente.id_cliente,
+            "fecha_creacion": str(self.fecha_creacion),
+            "items": self.items
+        }
 
+    @staticmethod
+    def from_dict(data, clientes=None):
+        cliente = None
+        if clientes:
+            cliente = next((c for c in clientes if str(c.id_cliente) == str(data.get("id_cliente"))), None)
+        else:
+            cliente = data.get("id_cliente")  
+        carrito = CarroDeCompra(cliente)
+        carrito.id_carrito = data.get("id_carrito")
+        carrito.fecha_creacion = data.get("fecha_creacion")
+        carrito.items = data.get("items", [])
+        return carrito

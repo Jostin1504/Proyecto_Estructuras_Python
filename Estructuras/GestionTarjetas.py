@@ -46,7 +46,7 @@ class GestionTarjetas:
             for t in self.tarjetas:
                 escritor.writerow([t.numero_tarjeta, t.codigo, t.banco, t.id_usuario])
 
-    def registrar_tarjeta(self, id_usuario, numero, codigo, banco):
+    def registrar_tarjeta(self, id_usuario, numero, codigo, banco, saldo=0.0):
        if len(numero) not in (15, 16):
          raise ValueError(f"Número de tarjeta inválido: {numero}")
        if len(codigo) != 3:

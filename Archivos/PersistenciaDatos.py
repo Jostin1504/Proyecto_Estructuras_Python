@@ -1,9 +1,9 @@
 import csv
 from Clases_Base.Cliente import Cliente
-from Clases_Base.Tarjeta import Tarjeta
+from Clases_Base.Tarjeta import TarjetaDeCompra as Tarjeta
 from Clases_Base.articulo import Articulo
 from Clases_Base.Registro import Registro
-from Estructuras.Carrodecompra import Carrodecompra
+from Estructuras.Carrodecompra import CarroDeCompra as Carrodecompra
 
 class Archivo:
     Clientes_csv = 'Archivos/Clientes.csv'
@@ -12,34 +12,34 @@ class Archivo:
     Registros_csv = 'Archivos/Registros.csv'
     Carrodecompra_csv = 'Archivos/Carrodecompra.csv'
 
-    def guardar_lista(objetos, path: str, is_cliente=False):
+    @staticmethod
+    def guardar_lista(objetos, path: str):
         if not objetos:
             return
-        fieldnames = list(objetos[0].parametros().keys()) if is_cliente else list(objetos[0].to_dict().keys())
+        fieldnames = list(objetos[0].to_dict().keys())
         with open(path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
             for obj in objetos:
-                row = obj.parametros() if is_cliente else obj.to_dict()
-                writer.writerow(row)
+                writer.writerow(obj.to_dict())
 
-    def cargar_lista(cls, path: str, is_cliente=False):
+    @staticmethod
+    def cargar_lista(cls, path: str):
         objetos = []
         try:
             with open(path, 'r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    obj = cls.parametros_data(row) if is_cliente else cls.from_dict(row)
-                    objetos.append(obj)
+                    objetos.append(cls.from_dict(row))
         except FileNotFoundError:
             pass
         return objetos
     
     def guardar_clientes(clientes):
-        Archivo.guardar_lista(clientes, Archivo.Clientes_csv, is_cliente=True)
+        Archivo.guardar_lista(clientes, Archivo.Clientes_csv)
 
     def cargar_clientes():
-        return Archivo.cargar_lista(Cliente, Archivo.Clientes_csv, is_cliente=True)
+        return Archivo.cargar_lista(Cliente, Archivo.Clientes_csv)
     
     def guardar_tarjetas(tarjetas):
         Archivo.guardar_lista(tarjetas, Archivo.Tarjetas_csv)

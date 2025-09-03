@@ -84,7 +84,6 @@ class SistemaCompraModerno:
             ("👤 Gestión Clientes", self.mostrar_gestion_clientes),
             ("📦 Inventario", self.mostrar_inventario),
             ("🛍️ Nueva Compra", self.mostrar_nueva_compra),
-            ("💳 Gestión Tarjetas", self.mostrar_gestion_tarjetas),
             ("📊 Reportes", self.mostrar_reportes),
             ("⚙️ Configuración", self.mostrar_configuracion)
         ]
@@ -931,25 +930,42 @@ class SistemaCompraModerno:
 
 
     def mostrar_gestion_tarjetas(self):
-                """Mostrar gestión de tarjetas"""
-                self.limpiar_contenido()
-                
-                title_label = ctk.CTkLabel(
-                    self.content_frame,
-                    text="💳 Gestión de Tarjetas",
-                    font=ctk.CTkFont(size=24, weight="bold")
-                )
-                title_label.pack(pady=20)
-                
-                tarjetas_frame = ctk.CTkFrame(self.content_frame)
-                tarjetas_frame.pack(fill="both", expand=True, padx=20, pady=10)
-                
-                placeholder = ctk.CTkLabel(
-                    tarjetas_frame,
-                    text="Módulo de tarjetas en construcción...",
-                    font=ctk.CTkFont(size=16)
-                )
-                placeholder.pack(pady=100)
+        """Mostrar gestión de tarjetas"""
+        self.limpiar_contenido()
+        
+        title_label = ctk.CTkLabel(
+            self.content_frame,
+            text="💳 Gestión de Tarjetas",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=20)
+        
+        tarjetas_frame = ctk.CTkFrame(self.content_frame)
+        tarjetas_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        placeholder = ctk.CTkLabel(
+            tarjetas_frame,
+            text="Módulo de tarjetas en construcción...",
+            font=ctk.CTkFont(size=16)
+        )
+        placeholder.pack(pady=100)
+        """Procesar el pago del carrito actual"""
+        if not self.carrito or not self.carrito.items:
+            messagebox.showinfo("Pago", "El carrito está vacío.")
+            return
+        ProcesarPago(self.carrito).procesar_pago()
+        # Eliminar productos del inventario
+        for item in self.carrito.items:
+            nodo = next((n for n in self.inventario.pasar_a_lista_nodos(self.inventario) if n.dato.nombre == item["nombre"]), None)
+            if nodo:
+                for _ in range(item["cantidad"]):
+                    if nodo.pila.items:
+                        nodo.pila.items.pop()
+        messagebox.showinfo("Pago", "Pago procesado con éxito")
+        self.carrito = None
+        self.actualizar_carrito_vista()
+        self.cargar_productos_en_interfaz()  # Actualiza inventario en la interfaz
+       
         
     def mostrar_reportes(self):
             """Mostrar reportes del sistema"""
@@ -1226,70 +1242,70 @@ class SistemaCompraModerno:
       except Exception as e:
         messagebox.showerror("Error", f"Error al registrar cliente: {str(e)}")
     def mostrar_gestion_clientes(self):
-            """Mostrar la interfaz de gestión de clientes"""
-            # Limpiar el contenido actual
-            self.limpiar_contenido()
-            
-            # Título principal
-            title_label = ctk.CTkLabel(
-                self.content_frame,
-                text="👥 Gestión de Clientes",
-                font=ctk.CTkFont(size=24, weight="bold")
+        """Mostrar la interfaz de gestión de clientes"""
+        # Limpiar el contenido actual
+        self.limpiar_contenido()
+        
+        # Título principal
+        title_label = ctk.CTkLabel(
+            self.content_frame,
+            text="👥 Gestión de Clientes",
+            font=ctk.CTkFont(size=24, weight="bold")
+        )
+        title_label.pack(pady=(5, 10))  # Reducido de pady=20 a (5, 10)
+        
+        # Frame principal para clientes
+        clientes_frame = ctk.CTkFrame(self.content_frame)
+        clientes_frame.pack(fill="both", expand=True, padx=10, pady=5)  # Reducido de padx=20, pady=10
+        
+        # Frame para botones superiores (más completo que el primero)
+        buttons_frame = ctk.CTkFrame(clientes_frame)
+        buttons_frame.pack(fill="x", padx=10, pady=5)  # Reducido de padx=20, pady=10
+        
+        # Botón Nuevo Cliente
+        btn_nuevo = ctk.CTkButton(
+            buttons_frame,
+            text="➕ Nuevo Cliente",
+            command=self.nuevo_cliente,
+            height=35,  # Reducido de 40 a 35
+            font=ctk.CTkFont(size=14, weight="bold")
             )
-            title_label.pack(pady=20)
-            
-            # Frame principal para clientes
-            clientes_frame = ctk.CTkFrame(self.content_frame)
-            clientes_frame.pack(fill="both", expand=True, padx=20, pady=10)
-            
-            # Frame para botones superiores (más completo que el primero)
-            buttons_frame = ctk.CTkFrame(clientes_frame)
-            buttons_frame.pack(fill="x", padx=20, pady=10)
-            
-            # Botón Nuevo Cliente
-            btn_nuevo = ctk.CTkButton(
-                buttons_frame,
-                text="➕ Nuevo Cliente",
-                command=self.nuevo_cliente,
-                height=40,
-                font=ctk.CTkFont(size=14, weight="bold")
-                )
-            btn_nuevo.pack(side="left", padx=20, pady=15)
-            
-            # Botón Buscar Cliente
-            btn_buscar = ctk.CTkButton(
-                buttons_frame,
-                text="🔍 Buscar Cliente",
-                command=self.buscar_cliente,
-                height=40
-                )
-            btn_buscar.pack(side="left", padx=10, pady=15)
-            
-            # Botón Actualizar Lista (funcionalidad del segundo método)
-            btn_actualizar = ctk.CTkButton(
-                buttons_frame,
-                text="🔄 Actualizar",
-                command=self.actualizar_lista_clientes,
-                height=40,
-                fg_color=("gray70", "gray30"),
-                hover_color=("gray60", "gray40")
-                )
-            btn_actualizar.pack(side="right", padx=20, pady=15)
-            
-            # Título de la lista
-            list_title = ctk.CTkLabel(
-                clientes_frame,
-                text="Lista de Clientes",
-                font=ctk.CTkFont(size=16, weight="bold")
-                )
-            list_title.pack(pady=(20, 10))
-            
-            # Frame scrollable para la lista de clientes
-            self.lista_frame = ctk.CTkScrollableFrame(clientes_frame, height=400)
-            self.lista_frame.pack(fill="both", expand=True, padx=20, pady=10)
-            
-            # Cargar la lista inicial de clientes
-            self.actualizar_lista_clientes()
+        btn_nuevo.pack(side="left", padx=10, pady=8)  # Reducido de padx=20, pady=15
+        
+        # Botón Buscar Cliente
+        btn_buscar = ctk.CTkButton(
+            buttons_frame,
+            text="🔍 Buscar Cliente",
+            command=self.buscar_cliente,
+            height=35  # Reducido de 40 a 35
+            )
+        btn_buscar.pack(side="left", padx=5, pady=8)  # Reducido de padx=10, pady=15
+        
+        # Botón Actualizar Lista (funcionalidad del segundo método)
+        btn_actualizar = ctk.CTkButton(
+            buttons_frame,
+            text="🔄 Actualizar",
+            command=self.actualizar_lista_clientes,
+            height=35,  # Reducido de 40 a 35
+            fg_color=("gray70", "gray30"),
+            hover_color=("gray60", "gray40")
+            )
+        btn_actualizar.pack(side="right", padx=10, pady=8)  # Reducido de padx=20, pady=15
+        
+        # Título de la lista
+        list_title = ctk.CTkLabel(
+            clientes_frame,
+            text="Lista de Clientes",
+            font=ctk.CTkFont(size=16, weight="bold")
+            )
+        list_title.pack(pady=(8, 5))  # Reducido de pady=(20, 10)
+        
+        # Frame scrollable para la lista de clientes
+        self.lista_frame = ctk.CTkScrollableFrame(clientes_frame, height=300)  # Reducido de 400 a 300
+        self.lista_frame.pack(fill="both", expand=True, padx=10, pady=5)  # Reducido de padx=20, pady=10
+        
+        # Cargar la lista inicial de clientes
+        self.actualizar_lista_clientes()
           
 
     def actualizar_lista_clientes(self):
@@ -1967,124 +1983,185 @@ class SistemaCompraModerno:
       buttons_frame = ctk.CTkFrame(card_frame)
       buttons_frame.pack(side="right", fill="y", padx=15, pady=15)
 
+    #Boton recargar tarjeta
+      btn_recargar = ctk.CTkButton(
+         buttons_frame,
+         text="💳 Recargar",
+         command=lambda t=tarjeta: self.abrir_modal_recarga(t),
+         height=35,
+         fg_color=("blue", "lightblue")
+      )
+      btn_recargar.pack(pady=5)
+
     # Botón eliminar tarjeta
       btn_eliminar = ctk.CTkButton(
-         buttons_frame,
-         text="🗑️ Eliminar",
-         command=lambda t=tarjeta: self.confirmar_eliminar_tarjeta(t),
+        buttons_frame,
+        text="🗑️ Eliminar",
+        command=lambda t=tarjeta: self.confirmar_eliminar_tarjeta(t),
         width=100,
-         height=35,
-         fg_color=("red", "darkred")
-         )
-      btn_eliminar.pack(pady=5)    
-    def abrir_modal_nueva_tarjeta(self, cliente):
-      """Abrir modal para agregar nueva tarjeta"""
-      modal_nueva_tarjeta = ctk.CTkToplevel(self.modal_tarjetas)
-      modal_nueva_tarjeta.title("➕ Nueva Tarjeta")
-      modal_nueva_tarjeta.geometry("500x450")
-      modal_nueva_tarjeta.transient(self.modal_tarjetas)
-      modal_nueva_tarjeta.grab_set()
+        height=35,
+        fg_color=("red", "darkred")
+        )
+      btn_eliminar.pack(pady=5)  
 
-    # Centrar ventana
-      modal_nueva_tarjeta.update_idletasks()
-      x = (modal_nueva_tarjeta.winfo_screenwidth() // 2) - 250
-      y = (modal_nueva_tarjeta.winfo_screenheight() // 2) - 225
-      modal_nueva_tarjeta.geometry(f"500x450+{x}+{y}")
 
-    # Frame principal
-      main_frame = ctk.CTkFrame(modal_nueva_tarjeta)
-      main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-
+    def abrir_recarga(self, tarjeta):
+    # Crear ventana modal
+      modal = ctk.CTkToplevel(self)
+      modal.title("Recargar Tarjeta")
+      modal.geometry("400x400")
+      modal.resizable(False, False)
+    
+      modal.grab_set()
     # Título
-      title_label = ctk.CTkLabel(
-         main_frame,
-         text=f"Agregar Tarjeta para {cliente.nombre}",
-         font=ctk.CTkFont(size=18, weight="bold")
-         )
-      title_label.pack(pady=(10, 30))
-
-    # Variables
-      numero_var = ctk.StringVar()
-      cvv_var = ctk.StringVar()
-      banco_var = ctk.StringVar(value="Banco Nacional")
-
-    # Campos del formulario
-    # Número de tarjeta
-      numero_label = ctk.CTkLabel(main_frame, text="Número de Tarjeta:", font=ctk.CTkFont(size=14))
-      numero_label.pack(anchor="w", padx=20, pady=(15, 5))
-
-      numero_entry = ctk.CTkEntry(
-         main_frame,
-         textvariable=numero_var,
-         height=35,
-         font=ctk.CTkFont(size=12),
-         placeholder_text="1234567812345678 (15 o 16 dígitos)"
-         )
-      numero_entry.pack(fill="x", padx=20, pady=(0, 10))
-      numero_entry.focus()
-
-    # CVV
-      cvv_label = ctk.CTkLabel(main_frame, text="Código de Seguridad (CVV):", font=ctk.CTkFont(size=14))
-      cvv_label.pack(anchor="w", padx=20, pady=(15, 5))
-
-      cvv_entry = ctk.CTkEntry(
-         main_frame,
-         textvariable=cvv_var,
-         height=35,
-         font=ctk.CTkFont(size=12),
-         placeholder_text="123 (3 dígitos)",
-         show="*"
-         )
-      cvv_entry.pack(fill="x", padx=20, pady=(0, 10))
-
-    # Banco
-      banco_label = ctk.CTkLabel(main_frame, text="Banco Emisor:", font=ctk.CTkFont(size=14))
-      banco_label.pack(anchor="w", padx=20, pady=(15, 5))
-
-      banco_menu = ctk.CTkOptionMenu(
-         main_frame,
-         values=["Banco Nacional", "Banco de Costa Rica", "BAC San José", "Scotiabank", "Banco Popular", "Davivienda", "Otro"],
-         variable=banco_var,
-         height=35
-         )
-      banco_menu.pack(fill="x", padx=20, pady=(0, 15))
-
-    # Información de seguridad
-      info_frame = ctk.CTkFrame(main_frame)
-      info_frame.pack(fill="x", padx=20, pady=10)
-
-      info_label = ctk.CTkLabel(
-         info_frame,
-         text="🔒 La información de la tarjeta se almacena de forma segura.\nSolo se mostrarán los últimos 4 dígitos para identificación.",
-         font=ctk.CTkFont(size=11),
-         text_color=("gray60", "gray40"),
-         wraplength=400
-         )
-      info_label.pack(pady=10)
-
-    # Botones
-      buttons_frame = ctk.CTkFrame(main_frame)
-      buttons_frame.pack(fill="x", padx=20, pady=20)
-
-      btn_cancelar = ctk.CTkButton(
-         buttons_frame,
-         text="❌ Cancelar",
-         command=modal_nueva_tarjeta.destroy,
-         height=40,
-         fg_color=("gray70", "gray30")
-         )
-      btn_cancelar.pack(side="right", padx=(10, 20), pady=15)
-
-      btn_guardar = ctk.CTkButton(
-         buttons_frame,
-         text="💾 Guardar Tarjeta",
-         command=lambda: self.guardar_nueva_tarjeta(
-             modal_nueva_tarjeta, cliente, numero_var.get(), cvv_var.get(), banco_var.get()
-            ),
-          height=40,
-          font=ctk.CTkFont(size=14, weight="bold")
+      titulo = ctk.CTkLabel(modal, text="💳 Recargar Tarjeta", 
+                         font=ctk.CTkFont(size=20, weight="bold"))
+      titulo.pack(pady=20)
+    
+    # Mostrar info de la tarjeta
+      info_tarjeta = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero[-4:]}")
+      info_tarjeta.pack(pady=5)
+    
+      saldo_actual = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}", 
+                               font=ctk.CTkFont(size=16))
+      saldo_actual.pack(pady=10)
+    
+    # Frame para los botones de recarga
+      botones_frame = ctk.CTkFrame(modal)
+      botones_frame.pack(pady=20, padx=30, fill="x")
+    
+    # Los 4 botones de recarga
+      montos = [200, 400, 800, 1000]
+      colores = [("green", "lightgreen"), ("blue", "lightblue"), 
+               ("orange", "lightyellow"), ("purple", "lightpink")]
+    
+      for i, monto in enumerate(montos):
+          btn = ctk.CTkButton(
+              botones_frame,
+              text=f"Recargar ${monto}",
+              command=lambda m=monto: self.realizar_recarga(tarjeta, m, modal, saldo_actual),
+              height=40,
+              fg_color=colores[i],
+              font=ctk.CTkFont(size=14)
             )
-      btn_guardar.pack(side="right", padx=20, pady=15)
+          btn.pack(pady=8, padx=20, fill="x")
+    
+    # Botón cerrar
+      btn_cerrar = ctk.CTkButton(modal, text="Cerrar", 
+                              command=modal.destroy,
+                              fg_color=("gray", "darkgray"))
+      btn_cerrar.pack(pady=20) 
+    
+
+    def abrir_modal_nueva_tarjeta(self, cliente):
+        """Abrir modal para agregar nueva tarjeta"""
+        modal_nueva_tarjeta = ctk.CTkToplevel(self.modal_tarjetas)
+        modal_nueva_tarjeta.title("➕ Nueva Tarjeta")
+        modal_nueva_tarjeta.geometry("500x550")  # Aumentado de 450 a 550
+        modal_nueva_tarjeta.transient(self.modal_tarjetas)
+        modal_nueva_tarjeta.grab_set()
+
+        # Centrar ventana
+        modal_nueva_tarjeta.update_idletasks()
+        x = (modal_nueva_tarjeta.winfo_screenwidth() // 2) - 250
+        y = (modal_nueva_tarjeta.winfo_screenheight() // 2) - 275  # Ajustado para nueva altura
+        modal_nueva_tarjeta.geometry(f"500x550+{x}+{y}")
+
+        # Frame principal
+        main_frame = ctk.CTkFrame(modal_nueva_tarjeta)
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Título
+        title_label = ctk.CTkLabel(
+            main_frame,
+            text=f"Agregar Tarjeta para {cliente.nombre}",
+            font=ctk.CTkFont(size=18, weight="bold")
+        )
+        title_label.pack(pady=(10, 20))  # Reducido padding inferior de 30 a 20
+
+        # Variables
+        numero_var = ctk.StringVar()
+        cvv_var = ctk.StringVar()
+        banco_var = ctk.StringVar(value="Banco Nacional")
+
+        # Campos del formulario
+        # Número de tarjeta
+        numero_label = ctk.CTkLabel(main_frame, text="Número de Tarjeta:", font=ctk.CTkFont(size=14))
+        numero_label.pack(anchor="w", padx=20, pady=(10, 5))  # Reducido padding superior de 15 a 10
+
+        numero_entry = ctk.CTkEntry(
+            main_frame,
+            textvariable=numero_var,
+            height=35,
+            font=ctk.CTkFont(size=12),
+            placeholder_text="1234567812345678 (15 o 16 dígitos)"
+        )
+        numero_entry.pack(fill="x", padx=20, pady=(0, 10))
+        numero_entry.focus()
+
+        # CVV
+        cvv_label = ctk.CTkLabel(main_frame, text="Código de Seguridad (CVV):", font=ctk.CTkFont(size=14))
+        cvv_label.pack(anchor="w", padx=20, pady=(10, 5))  # Reducido padding superior de 15 a 10
+
+        cvv_entry = ctk.CTkEntry(
+            main_frame,
+            textvariable=cvv_var,
+            height=35,
+            font=ctk.CTkFont(size=12),
+            placeholder_text="123 (3 dígitos)",
+            show="*"
+        )
+        cvv_entry.pack(fill="x", padx=20, pady=(0, 10))
+
+        # Banco
+        banco_label = ctk.CTkLabel(main_frame, text="Banco Emisor:", font=ctk.CTkFont(size=14))
+        banco_label.pack(anchor="w", padx=20, pady=(10, 5))  # Reducido padding superior de 15 a 10
+
+        banco_menu = ctk.CTkOptionMenu(
+            main_frame,
+            values=["Banco Nacional", "Banco de Costa Rica", "BAC San José", "Scotiabank", "Banco Popular", "Davivienda", "Otro"],
+            variable=banco_var,
+            height=35
+        )
+        banco_menu.pack(fill="x", padx=20, pady=(0, 10))  # Reducido padding inferior de 15 a 10
+
+        # Información de seguridad
+        info_frame = ctk.CTkFrame(main_frame)
+        info_frame.pack(fill="x", padx=20, pady=10)
+
+        info_label = ctk.CTkLabel(
+            info_frame,
+            text="🔒 La información de la tarjeta se almacena de forma segura.\nSolo se mostrarán los últimos 4 dígitos para identificación.",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray60", "gray40"),
+            wraplength=400
+        )
+        info_label.pack(pady=10)
+
+        # Botones
+        buttons_frame = ctk.CTkFrame(main_frame)
+        buttons_frame.pack(fill="x", padx=20, pady=(15, 10))  # Reducido padding superior de 20 a 15
+
+        btn_cancelar = ctk.CTkButton(
+            buttons_frame,
+            text="❌ Cancelar",
+            command=modal_nueva_tarjeta.destroy,
+            height=40,
+            fg_color=("gray70", "gray30")
+        )
+        btn_cancelar.pack(side="right", padx=(10, 20), pady=10)  # Reducido padding de 15 a 10
+
+        btn_guardar = ctk.CTkButton(
+            buttons_frame,
+            text="💾 Guardar Tarjeta",
+            command=lambda: self.guardar_nueva_tarjeta(
+                modal_nueva_tarjeta, cliente, numero_var.get(), cvv_var.get(), banco_var.get()
+            ),
+            height=40,
+            font=ctk.CTkFont(size=14, weight="bold")
+        )
+        btn_guardar.pack(side="right", padx=20, pady=10)  # Reducido padding de 15 a 10
+
     def guardar_nueva_tarjeta(self, modal, cliente, numero, cvv, banco):
       """Guardar nueva tarjeta para el cliente"""
    
@@ -2126,7 +2203,7 @@ class SistemaCompraModerno:
                  numero=numero,
                  codigo=cvv,
                  banco=banco,
-                 saldo = 0.0
+                 saldo = 0.0,
                  )
 
              if resultado:
@@ -2146,10 +2223,18 @@ class SistemaCompraModerno:
 
       except Exception as e:
         messagebox.showerror("Error", f"Error al agregar tarjeta: {str(e)}")
+
+    def realizar_recarga(self, tarjeta, monto, modal, label_saldo):
+        exito, mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
+        if exito:
+            messagebox.showinfo("Recarga Exitosa", mensaje)
+            label_saldo.config(text=f"Saldo: ${tarjeta.saldo}")
+        else:
+            messagebox.showerror("Error", mensaje)
+          
+
     def confirmar_eliminar_tarjeta(self, tarjeta):
       """Confirmar eliminación de tarjeta"""
-   
-    
       respuesta = messagebox.askyesno(
          "Confirmar Eliminación",
          f"¿Estás seguro de que deseas eliminar esta tarjeta?\n\n"

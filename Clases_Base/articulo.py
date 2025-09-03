@@ -17,3 +17,20 @@ class Articulo:
 #esto muestra la info, sin esto solo muestra la direccion de memoria
     def __str__(self):
         return f" Articulo: {self.nombre}, Tipo: {self.tipo}, Precio: {self.precio}, Cantidad: {self.cantidad}"
+
+    def to_dict(self):
+        return {
+            "nombre": self.nombre,
+            "tipo": self.tipo,
+            "precio": self.precio,
+            "cantidad": self.cantidad
+        }
+    
+    @staticmethod
+    def from_dict(data):
+        return Articulo(
+            nombre=data["nombre"],
+            tipo=data["tipo"],
+            precio=float(data["precio"]),
+            cantidad=int(data["cantidad"])
+    )
