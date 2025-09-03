@@ -1393,10 +1393,17 @@ class SistemaCompraModerno:
         if respuesta:
             
             if cliente in self.gestion_clientes.clientes:
+                if hasattr(self, 'gestion_tarjetas') and self.gestion_tarjetas.tarjetas is not None:
+                   self.gestion_tarjetas.tarjetas = [
+                      t for t in self.gestion_tarjetas.tarjetas
+                      if t.id_usuario != cliente.id_cliente
+                   ]
+                   self.gestion_tarjetas.guardar_tarjetas()
                 self.gestion_clientes.clientes.remove(cliente)
                 self.gestion_clientes.guardar_clientes()
                 messagebox.showinfo("Cliente Eliminado", f"Cliente {cliente.nombre} eliminado exitosamente")
                 self.actualizar_lista_clientes()  # Refrescar la lista
+                
     def buscar_cliente(self):
         """Abrir diálogo para buscar cliente"""
         # Verificar si ya hay una ventana de búsqueda abierta
