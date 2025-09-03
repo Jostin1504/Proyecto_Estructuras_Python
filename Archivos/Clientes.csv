@@ -1,0 +1,4 @@
+nombre,apellido,telefono,correo,direccion_envio,id_cliente,fecha_registro,password,Historial_compras
+Jozabad,Mejía,87849878,jozabad@gmail.com,Santo Domingo,e9dbff30-406c-4aed-a178-317709828ab4,2025-09-03 12:10:39,254254,[]
+Felipe,Durán,321456328,felipe@hotmail.com,Pavas,467fa0b2-b772-469f-924c-bfeeabd888ee,2025-09-03 12:11:14,1236,[]
+María,Jimenez,94827364,maria@firefox.com,Tures,a0ebb062-5ace-4176-b598-a518bdb9961b,2025-09-03 13:10:28,6584,[]
