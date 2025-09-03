@@ -1,4 +1,4 @@
-numero_tarjeta,codigo,banco,id_usuario,saldo
-4569874569874566,123,Banco Nacional,e9dbff30-406c-4aed-a178-317709828ab4,800.0
-654321452152365,987,Scotiabank,e9dbff30-406c-4aed-a178-317709828ab4,0.0
-6854795812547986,698,BAC San José,a0ebb062-5ace-4176-b598-a518bdb9961b,0.0
+numero_tarjeta,codigo,banco,id_usuario,saldo,recargas_realizadas
+4569874569874566,123,Banco Nacional,e9dbff30-406c-4aed-a178-317709828ab4,0.0,200:0
+654321452152365,987,Scotiabank,e9dbff30-406c-4aed-a178-317709828ab4,0.0,200:0
+6854795812547986,698,BAC San José,a0ebb062-5ace-4176-b598-a518bdb9961b,0.0,200:0
