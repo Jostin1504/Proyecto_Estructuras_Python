@@ -5,6 +5,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 clases_base_path = os.path.join(current_dir, "Clases_Base")
 sys.path.append(clases_base_path)
 from Clases_Base.Cliente import Cliente
+from Archivos.PersistenciaDatos import Archivo as file
 
 class GestionClientes:
     def __init__(self, archivo_clientes):
@@ -13,42 +14,12 @@ class GestionClientes:
         self.cargar_clientes()
              
     def cargar_clientes(self):
-        self.clientes = []
-        try:
-            with open(self.archivo_clientes, newline='', encoding='utf-8') as archivo:
-                reader = csv.reader(archivo)
-                for fila in reader:
-                    if len(fila) >= 8:  
-                        c = Cliente(
-                            nombre=fila[0],
-                            apellido=fila[3], 
-                            telefono=fila[4],
-                            correo=fila[5],
-                            direccion_envio=fila[6],
-                            id_cliente=fila[1],  
-                            fecha_registro=fila[7],
-                            password=fila[2]
-                        )
-                        self.clientes.append(c)
-        except FileNotFoundError:
-            with open(self.archivo_clientes, 'w', newline='', encoding='utf-8'):
-                pass
+        self.clientes = file.cargar_clientes()
+
  
     def guardar_clientes(self):
-        with open(self.archivo_clientes, 'w', newline='', encoding='utf-8') as archivo:
-            escritor = csv.writer(archivo)
-            for c in self.clientes:
-                
-                escritor.writerow([
-                    c.nombre, 
-                    c.id_cliente,  
-                    c.password,
-                    c.apellido,
-                    c.telefono,
-                    c.correo,
-                    c.direccion_envio,
-                    c.fecha_registro
-                ])
+        file.guardar_clientes(self.clientes)
+
     @staticmethod
     def formatear_id(id_cliente):
         if id_cliente is None:
@@ -91,9 +62,6 @@ class GestionClientes:
                 self.guardar_clientes()
                 return True
         return False
-
-
-
 
 
 
