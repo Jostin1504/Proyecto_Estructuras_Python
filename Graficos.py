@@ -1905,16 +1905,76 @@ class SistemaCompraModerno:
       buttons_frame = ctk.CTkFrame(card_frame)
       buttons_frame.pack(side="right", fill="y", padx=15, pady=15)
 
+    #Boton recargar tarjeta
+      btn_recargar = ctk.CTkButton(
+         buttons_frame,
+         text="💳 Recargar",
+         command=lambda t=tarjeta: self.abrir_modal_recarga(t),
+         height=35,
+         fg_color=("blue", "lightblue")
+      )
+      btn_recargar.pack(pady=5)
+
     # Botón eliminar tarjeta
       btn_eliminar = ctk.CTkButton(
-         buttons_frame,
-         text="🗑️ Eliminar",
-         command=lambda t=tarjeta: self.confirmar_eliminar_tarjeta(t),
+        buttons_frame,
+        text="🗑️ Eliminar",
+        command=lambda t=tarjeta: self.confirmar_eliminar_tarjeta(t),
         width=100,
-         height=35,
-         fg_color=("red", "darkred")
-         )
-      btn_eliminar.pack(pady=5)    
+        height=35,
+        fg_color=("red", "darkred")
+        )
+      btn_eliminar.pack(pady=5)  
+
+
+    def abrir_recarga(self, tarjeta):
+    # Crear ventana modal
+      modal = ctk.CTkToplevel(self)
+      modal.title("Recargar Tarjeta")
+      modal.geometry("400x400")
+      modal.resizable(False, False)
+    
+      modal.grab_set()
+    # Título
+      titulo = ctk.CTkLabel(modal, text="💳 Recargar Tarjeta", 
+                         font=ctk.CTkFont(size=20, weight="bold"))
+      titulo.pack(pady=20)
+    
+    # Mostrar info de la tarjeta
+      info_tarjeta = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero[-4:]}")
+      info_tarjeta.pack(pady=5)
+    
+      saldo_actual = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}", 
+                               font=ctk.CTkFont(size=16))
+      saldo_actual.pack(pady=10)
+    
+    # Frame para los botones de recarga
+      botones_frame = ctk.CTkFrame(modal)
+      botones_frame.pack(pady=20, padx=30, fill="x")
+    
+    # Los 4 botones de recarga
+      montos = [200, 400, 800, 1000]
+      colores = [("green", "lightgreen"), ("blue", "lightblue"), 
+               ("orange", "lightyellow"), ("purple", "lightpink")]
+    
+      for i, monto in enumerate(montos):
+          btn = ctk.CTkButton(
+              botones_frame,
+              text=f"Recargar ${monto}",
+              command=lambda m=monto: self.realizar_recarga(tarjeta, m, modal, saldo_actual),
+              height=40,
+              fg_color=colores[i],
+              font=ctk.CTkFont(size=14)
+            )
+          btn.pack(pady=8, padx=20, fill="x")
+    
+    # Botón cerrar
+      btn_cerrar = ctk.CTkButton(modal, text="Cerrar", 
+                              command=modal.destroy,
+                              fg_color=("gray", "darkgray"))
+      btn_cerrar.pack(pady=20) 
+    
+
     def abrir_modal_nueva_tarjeta(self, cliente):
       """Abrir modal para agregar nueva tarjeta"""
       modal_nueva_tarjeta = ctk.CTkToplevel(self.modal_tarjetas)
@@ -2064,7 +2124,6 @@ class SistemaCompraModerno:
                  numero=numero,
                  codigo=cvv,
                  banco=banco
-                 saldo = 0.0
                  )
 
              if resultado:
@@ -2084,10 +2143,18 @@ class SistemaCompraModerno:
 
       except Exception as e:
         messagebox.showerror("Error", f"Error al agregar tarjeta: {str(e)}")
+
+    def realizar_recarga(self, tarjeta, monto, modal, label_saldo):
+        exito, mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
+        if exito:
+            messagebox.showinfo("Recarga Exitosa", mensaje)
+            label_saldo.config(text=f"Saldo: ${tarjeta.saldo}")
+        else:
+            messagebox.showerror("Error", mensaje)
+          
+
     def confirmar_eliminar_tarjeta(self, tarjeta):
       """Confirmar eliminación de tarjeta"""
-   
-    
       respuesta = messagebox.askyesno(
          "Confirmar Eliminación",
          f"¿Estás seguro de que deseas eliminar esta tarjeta?\n\n"
@@ -2102,7 +2169,7 @@ class SistemaCompraModerno:
                   resultado = self.gestion_tarjetas.eliminar_tarjeta(
                      tarjeta.id_usuario,
                      tarjeta.numero_tarjeta,
-                     tarjeta.codigo
+                     tarjeta.codigo,
                      tarjeta.saldo
                      )
 
