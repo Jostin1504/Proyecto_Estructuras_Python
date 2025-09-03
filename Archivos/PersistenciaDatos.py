@@ -4,7 +4,7 @@ from Clases_Base.Tarjeta import TarjetaDeCompra as Tarjeta
 from Clases_Base.articulo import Articulo
 from Clases_Base.Registro import Registro
 from Estructuras.Carrodecompra import CarroDeCompra as Carrodecompra
-
+from Estructuras.GestionRegistros import Registros
 class Archivo:
     Clientes_csv = 'Archivos/Clientes.csv'
     Tarjetas_csv = 'Archivos/Tarjetas.csv'
@@ -96,7 +96,10 @@ class Archivo:
         return list(carritos_dict.values())
     
     def guardar_registros(registros):
-        Archivo.guardar_lista(registros, Archivo.Registros_csv)
+        if isinstance(registros, Registros):
+            lista = registros.lista_registros
+        else:lista = registros
+        Archivo.guardar_lista(lista, Archivo.Registros_csv)
 
     def cargar_registros():
         registros = []
@@ -111,6 +114,7 @@ class Archivo:
             pass
         return registros
     
+    
     def guardar_datos(clientes, tarjetas, articulos, carritos, registros):
         Archivo.guardar_clientes(clientes)
         Archivo.guardar_tarjetas(tarjetas)
@@ -123,5 +127,8 @@ class Archivo:
         tarjetas = Archivo.cargar_tarjetas()
         articulos = Archivo.cargar_articulos()
         carritos = Archivo.cargar_carritos()
-        registros = Archivo.cargar_registros()
+        registros_lista=Archivo.cargar_registros()
+        registros = Registros()
+        registros.lista_registros = registros_lista
         return clientes, tarjetas, articulos, carritos, registros
+
