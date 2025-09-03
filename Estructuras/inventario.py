@@ -62,7 +62,7 @@ class ListaInventario:
             nuevo_nodo.anterior = self.ultimo
             self.ultimo = nuevo_nodo
         return True  # Artículo agregado exitosamente
-
+        
     def existe_articulo(self, nombre):
         """
         Verifica si un artículo ya existe en el inventario.
@@ -231,6 +231,16 @@ class ListaInventario:
         return contador
     #Este metodo comprueba la cantidad de la pila para evitar que el usuario 
     #intente comprar mas de los que hay 
+    def verificar_cantidad_articulo(self, nombre, cantidad):
+        actual = self.primero
+        while actual:
+            if actual.dato.nombre.lower() == nombre.lower():
+                return len(actual.pila.items) >= cantidad
+            actual = actual.siguiente
+        return False
+        
+    
+
     def verificar_cantidad_articulo(self, nombre, cantidad):
         actual = self.primero
         while actual:
