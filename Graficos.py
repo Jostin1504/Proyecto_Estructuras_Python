@@ -845,22 +845,88 @@ class SistemaCompraModerno:
             self.carrito_label.pack(pady=10)
 
     def procesar_pago(self):
-        """Procesar el pago del carrito actual"""
-        if not self.carrito or not self.carrito.items:
-            messagebox.showinfo("Pago", "El carrito está vacío.")
-            return
-        ProcesarPago(self.carrito).procesar_pago()
-        # Eliminar productos del inventario
-        for item in self.carrito.items:
-            nodo = next((n for n in self.inventario.pasar_a_lista_nodos(self.inventario) if n.dato.nombre == item["nombre"]), None)
-            if nodo:
-                for _ in range(item["cantidad"]):
-                    if nodo.pila.items:
-                        nodo.pila.items.pop()
-        messagebox.showinfo("Pago", "Pago procesado con éxito")
-        self.carrito = None
-        self.actualizar_carrito_vista()
-        self.cargar_productos_en_interfaz()  # Actualiza inventario en la interfaz
+          """Procesar el pago del carrito actual"""
+
+          # Obtener cliente seleccionado del dropdown
+          cliente_seleccionado_texto = self.cliente_compra_var.get()
+          print(f"DEBUG - Texto seleccionado: {cliente_seleccionado_texto}")
+
+          # Buscar el objeto cliente completo
+          self.usuario_actual = None
+          for cliente in self.gestion_clientes.clientes:
+              nombre_completo = f"{cliente.nombre} {cliente.apellido} ({cliente.id_cliente})"
+              if nombre_completo == cliente_seleccionado_texto:
+                  self.usuario_actual = cliente
+                  break
+                
+          print(f"DEBUG - Usuario encontrado: {self.usuario_actual}")
+
+          # Verificar que hay un cliente seleccionado
+          if not self.usuario_actual:
+              messagebox.showerror("Error", "Debe seleccionar un cliente válido")
+              return
+
+          # Verificar que el carrito no está vacío
+          if not self.carrito or not self.carrito.items:
+              messagebox.showinfo("Pago", "El carrito está vacío.")
+              return
+
+          # Pedir datos al usuario
+          numero = simpledialog.askstring("Pago", "Ingrese número de tarjeta:")
+          if not numero:
+              return
+
+          cvv = simpledialog.askstring("Pago", "Ingrese CVV:")
+          if not cvv:
+              return
+
+          password = simpledialog.askstring("Pago", "Ingrese su contraseña:")
+          if not password:
+              return
+
+          try:
+              # Crear procesador de pago
+              procesador = ProcesarPago(self.carrito, self.gestion_tarjetas)
+
+              # Procesar pago
+              resultado = procesador.procesar_pago(
+                  self.usuario_actual,  # cliente obtenido del dropdown
+                  numero,
+                  cvv,
+                  password
+              )
+
+              print(f"DEBUG - Resultado del pago: {resultado}")
+
+              # Si el pago fue exitoso (verificar si contiene símbolo de éxito)
+              if "✅" in resultado or "exitoso" in resultado.lower():
+                  # Eliminar productos del inventario solo si el pago fue exitoso
+                  for item in self.carrito.items:
+                      nodo = next(
+                          (n for n in self.inventario.pasar_a_lista_nodos(self.inventario)
+                           if n.dato.nombre == item["nombre"]),
+                          None
+                      )
+                      if nodo:
+                          for _ in range(item["cantidad"]):
+                              if nodo.pila.items:
+                                  nodo.pila.items.pop()
+
+                  # Resetear carrito
+                  self.carrito = None
+                  self.actualizar_carrito_vista()
+                  self.cargar_productos_en_interfaz()
+
+              # Mostrar resultado del pago
+              if "❌" in resultado or "error" in resultado.lower():
+                  messagebox.showerror("Error de pago", resultado)
+              else:
+                  messagebox.showinfo("Pago", resultado)
+
+          except Exception as e:
+              print(f"DEBUG - Excepción: {str(e)}")
+              messagebox.showerror("Error de pago", f"Error inesperado: {str(e)}")
+
        
         
     def mostrar_reportes(self):
