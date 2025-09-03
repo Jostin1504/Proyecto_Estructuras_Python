@@ -1931,9 +1931,9 @@ class SistemaCompraModerno:
       btn_eliminar.pack(pady=5)  
 
 
-    def abrir_recarga(self, tarjeta):
+    def abrir_modal_recarga(self, tarjeta):
     # Crear ventana modal
-      modal = ctk.CTkToplevel(self)
+      modal = ctk.CTkToplevel(self.root)
       modal.title("Recargar Tarjeta")
       modal.geometry("400x400")
       modal.resizable(False, False)
@@ -1945,7 +1945,7 @@ class SistemaCompraModerno:
       titulo.pack(pady=20)
     
     # Mostrar info de la tarjeta
-      info_tarjeta = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero[-4:]}")
+      info_tarjeta = ctk.CTkLabel(modal, text=f"Tarjeta: **** {tarjeta.numero_tarjeta[-4:]}")
       info_tarjeta.pack(pady=5)
     
       saldo_actual = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}", 
@@ -2154,7 +2154,7 @@ class SistemaCompraModerno:
         exito, mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
         if exito:
             messagebox.showinfo("Recarga Exitosa", mensaje)
-            label_saldo.config(text=f"Saldo: ${tarjeta.saldo}")
+            label_saldo.configure(text=f"Saldo: ${tarjeta.saldo}")
         else:
             messagebox.showerror("Error", mensaje)
           
