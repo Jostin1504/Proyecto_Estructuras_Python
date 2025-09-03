@@ -1,15 +1,45 @@
 import os
 from datetime import datetime
+from Clases_Base.Tarjeta import TarjetaDeCompra
+from Clases_Base.Cliente import Cliente
+
 
 class ProcesarPago:
-    #Procesos de pago y de facturacion
-    def __init__(self, carro_de_compra):
-        self.carro_de_compra = carro_de_compra
 
-    def procesar_pago(self):
-        print("Procesando pago...")
-        self.carro_de_compra.pila_articulos()
-        print("Pago procesado con éxito.")
+    def __init__(self, carro_de_compra, gestor_tarjetas=None):
+        self.carro_de_compra = carro_de_compra
+        self.gestor_tarjetas = gestor_tarjetas
+
+    def procesar_pago(self, cliente, numero_tarjeta, cvv, password):
+        """Procesar pago con los datos recibidos"""
+        
+        # Verificar contraseña del cliente
+        if cliente.password != password:
+            return "❌ Error: contraseña incorrecta. Pago cancelado."
+
+        # Buscar tarjeta
+        tarjeta = None
+        if self.gestor_tarjetas:
+            for t in self.gestor_tarjetas.tarjetas:
+                if (t.numero_tarjeta == numero_tarjeta and 
+                    t.codigo == cvv and 
+                    t.id_usuario == cliente.id_cliente):
+                    tarjeta = t
+                    break
+
+        if not tarjeta:
+            return "❌ Tarjeta no encontrada o datos incorrectos."
+
+        # Verificar saldo
+        total = self.carro_de_compra.calcular_total()
+        if tarjeta.saldo < total:
+            return f"❌ Saldo insuficiente. Necesita ${total:.2f}, disponible ${tarjeta.saldo:.2f}"
+
+        # Procesar pago
+        tarjeta.saldo -= total
+        self.generar_recibo()
+        
+        return f"✅ Pago realizado con éxito por ${total:.2f}"
 
     def generar_factura(self):
         carpeta = "Archivos/Recibos"

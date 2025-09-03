@@ -1,4 +1,4 @@
-from Clases_base.Registro import Registro
+from Clases_Base.Registro import Registro
 
 class Registros:
     def _init_(self):
