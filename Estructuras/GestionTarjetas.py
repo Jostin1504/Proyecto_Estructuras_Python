@@ -19,10 +19,7 @@ class GestionTarjetas:
         self.gestor_clientes = gestor_clientes
         self.tarjetas = []
         self.cargar_tarjetas()
-        self.saldo = 0.0
         #esto es para restringir las recargas posibles por monto
-        self.limite_recargas = {200: 3, 400:3, 600:2, 1000: 2}
-
     def cargar_tarjetas(self):
         self.tarjetas = file.cargar_tarjetas()
 
@@ -60,7 +57,7 @@ class GestionTarjetas:
 
     def autenticar_tarjeta(self, numero, codigo):
         for t in self.tarjetas:
-            if t.numero == numero and t.codigo == codigo:
+            if t.numero_tarjeta == numero and t.codigo == codigo:
                 return t
         return None
 
@@ -70,7 +67,7 @@ class GestionTarjetas:
             raise ValueError(f"No existe el cliente con id '{id_usuario}'")
         tarjeta = next(
             (t for t in self.tarjetas
-             if t.numero == numero and t.codigo == codigo and t.id_usuario == id_usuario),
+             if t.numero_tarjeta == numero and t.codigo == codigo and t.id_usuario == id_usuario),
             None
         )
         if not tarjeta:
@@ -82,16 +79,20 @@ class GestionTarjetas:
     
     #para la recarga de tarjetas
     def recargar_tarjeta(self, tarjeta, monto):
-        if monto not in self.limite_recargas:
-            raise ValueError(f"Monto de recarga inválido: {monto}")
+        if monto <= 0:
+            raise ValueError("El monto de recarga debe ser positivo.")
+        
+        if monto > 3000:
+            raise ValueError("El monto de recarga no puede exceder los $3000.")
+   
+        if not tarjeta.puede_recargar(monto):
+           saldo_disponible = tarjeta.maximo_saldo - tarjeta.saldo
+           raise ValueError("No se puede recargar. Saldo máximo alcanzado.")
 
-        #verifica que no pase el limite establecido por monto
-        if tarjeta.recargas_realizadas >= self.limite_recargas[monto]:
-            raise ValueError(f"Límite de recargas alcanzado para {monto}")
+        if tarjeta.recargar(monto):
+            self.guardar_tarjetas()
+            return f"Recarga de ${monto} exitosa. Nuevo saldo: ${tarjeta.saldo}"
         else:
-            tarjeta.saldo += monto
-            tarjeta.recargas_realizadas[monto] += 1
-
-            recargas_restantes = self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
-            return (f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}")
+            raise ValueError("No se pudo realizar la recarga.")
+        
         

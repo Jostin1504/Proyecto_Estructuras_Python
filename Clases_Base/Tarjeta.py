@@ -6,12 +6,22 @@ class TarjetaDeCompra:
         self.banco = banco
         self.id_usuario = id_usuario
         self.saldo = 0.0
+        self.maximo_saldo = 3000.0
 
     def info_tarjeta(self):
         print(f"Tarjeta: {self.numero_tarjeta}")
         print(f"Banco: {self.banco}")
         print(f"Saldo: {self.saldo}")
 
+    def puede_recargar(self, monto):
+        return self.saldo + monto <= self.maximo_saldo
+
+    def recargar(self, monto):
+        if self.puede_recargar(monto):
+            self.saldo += monto
+            return True
+        return False
+    
     def to_dict(self):
         recargas_str = ":".join([f"{k}:{v}" for k, v in self.recargas_realizadas.items()])
         return {
