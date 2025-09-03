@@ -6,11 +6,11 @@ from Clases_Base.Registro import Registro
 from Estructuras.Carrodecompra import CarroDeCompra as Carrodecompra
 from Estructuras.GestionRegistros import Registros
 class Archivo:
-    Clientes_csv = 'Archivos/Clientes.csv'
-    Tarjetas_csv = 'Archivos/Tarjetas.csv'
-    Articulos_csv = 'Archivos/Articulos.csv'
-    Registros_csv = 'Archivos/Registros.csv'
-    Carrodecompra_csv = 'Archivos/Carrodecompra.csv'
+    Clientes_csv = 'Clientes.csv'
+    Tarjetas_csv = 'Tarjetas.csv'
+    Articulos_csv = 'Articulos.csv'
+    Registros_csv = 'Registros.csv'
+    Carrodecompra_csv = 'Carrodecompra.csv'
 
     @staticmethod
     def guardar_lista(objetos, path: str):
