@@ -41,7 +41,8 @@ class SistemaCompraModerno:
         self.usuario_actual = None
         self.carrito = None
         self.inventario = ListaInventario()
-        self.gestion_clientes = GestionClientes("clientes.csv")        
+        self.gestion_clientes = GestionClientes("clientes.csv")  
+        self.gestion_tarjetas = GestionTarjetas("tarjetas.csv",self.gestion_clientes)
         self.crear_interfaz_principal()
         
     def centrar_ventana(self):
@@ -2072,6 +2073,7 @@ class SistemaCompraModerno:
           font=ctk.CTkFont(size=14, weight="bold")
             )
       btn_guardar.pack(side="right", padx=20, pady=15)
+
     def guardar_nueva_tarjeta(self, modal, cliente, numero, cvv, banco):
       """Guardar nueva tarjeta para el cliente"""
    
