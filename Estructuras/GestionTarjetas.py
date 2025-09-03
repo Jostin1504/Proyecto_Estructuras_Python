@@ -95,6 +95,3 @@ class GestionTarjetas:
             recargas_restantes = self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
             return (f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}")
         
-    def recargas_restantes(self, tarjeta):
-        return {monto: self.limite_recargas[monto] - tarjeta.recargas_realizadas[monto]
-                for monto in self.limite_recargas}

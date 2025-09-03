@@ -1900,6 +1900,15 @@ class SistemaCompraModerno:
       )
       btn_recargar.pack(pady=5)
 
+        #boton ver tarjeta
+      btn_ver_tarjeta = ctk.CTkButton(
+          buttons_frame,
+          text="Ver Tarjeta",
+          command=lambda: self.ver_detalles_de_tarjeta(tarjeta),
+          fg_color=("orange")
+        )
+      btn_ver_tarjeta.pack(pady=15)
+
     # Botón eliminar tarjeta
       btn_eliminar = ctk.CTkButton(
         buttons_frame,
@@ -1950,26 +1959,71 @@ class SistemaCompraModerno:
             command=lambda: self.procesar_recarga(tarjeta, entry_monto, modal, saldo_label)
         )
         btn_recargar.pack(pady=15)
-    
+
     # Botón cerrar
         btn_cerrar = ctk.CTkButton(modal, text="Cerrar", 
-                              command=modal.destroy,
-                              fg_color="gray")
+          command=modal.destroy,
+          fg_color="gray"
+        )
         btn_cerrar.pack(pady=5)
 
     def procesar_recarga(self, tarjeta, entry_monto, modal, saldo_label):
         try:
             monto = float(entry_monto.get())
-            
-            mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
+            if monto <= 0 or monto > 3000:
+              raise ValueError("El monto debe ser positivo y no exceder $3000.")
 
+            tarjeta.saldo += monto
+
+            for t in self.tarjetas:
+              if t.numero_tarjeta == tarjeta.numero_tarjeta:
+                  t.saldo = tarjeta.saldo
+                  break
+                  
+            self.guardar_nueva_tarjeta()
             saldo_label.configure(text=f"Saldo actual: ${tarjeta.saldo}")
-
             entry_monto.delete(0, 'end')
-            self.mostrar_exito(f"Recarga exitosa de ${monto}")
+
+            self.mostrar_exito(f"Recarga exitosa. Nuevo saldo: ${tarjeta.saldo}")
 
         except ValueError:
-            self.mostrar_error("Ingrese un número válido")
+            self.mostrar_error("El monto debe ser positivo y no exceder $3000.")
+
+    def ver_detalles_de_tarjeta(self, tarjeta):
+        modal = ctk.CTkToplevel()
+        modal.title("Detalles de Tarjeta")
+        modal.geometry("300x200")
+        modal.resizable(False, False)
+
+        modal.grab_set()
+        modal.focus_force()
+        modal.lift()
+        modal.attributes("-topmost", True)
+        modal.after(100, lambda: modal.attributes("-topmost", False))
+
+    # Título
+        ctk.CTkLabel(
+            modal, 
+            text="Detalles de la Tarjeta", 
+            font=ctk.CTkFont(size=16, weight="bold")
+        ).pack(pady=15)
+
+    # Banco
+        ctk.CTkLabel(modal, text=f"Banco: {tarjeta.banco}").pack(pady=5)
+
+    # 🔥 Label del saldo (lo guardamos en una variable)
+        saldo_label = ctk.CTkLabel(modal, text=f"Saldo: ${tarjeta.saldo}")
+        saldo_label.pack(pady=5)
+
+    # Botón actualizar saldo (opcional)
+        ctk.CTkButton(
+            modal, 
+            text="Actualizar Saldo", 
+            command=lambda: saldo_label.configure(text=f"Saldo: ${tarjeta.saldo}")
+        ).pack(pady=10)
+
+    # Botón cerrar
+        ctk.CTkButton(modal, text="Cerrar", command=modal.destroy).pack(pady=10)
 
     def mostrar_error(self, mensaje):
       # Mensaje de error simple
