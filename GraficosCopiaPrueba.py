@@ -24,9 +24,9 @@ from Estructuras.GestionRegistros import Registros
 from Archivos.PersistenciaDatos import Archivo as file
 class SistemaCompraModerno:
     def __init__(self):
-        clientes, tarjetas, articulos, carritos, registros_lista = file.cargar_datos()
-        self.clientes = clientes
-        self.tarjetas = tarjetas
+        gestion_clientes, gestion_tarjetas, articulos, carritos, registros_lista = file.cargar_datos()
+        self.clientes = gestion_clientes
+        self.tarjetas = gestion_tarjetas
         self.articulos = articulos
         self.carritos = carritos
         self.registros = Registros()
@@ -41,8 +41,8 @@ class SistemaCompraModerno:
         self.usuario_actual = None
         self.carrito = None
         self.inventario = ListaInventario()
-        self.gestion_clientes = GestionClientes("clientes.csv")  
-        self.gestion_tarjetas = GestionTarjetas("tarjetas.csv",self.gestion_clientes)
+        self.gestion_clientes = GestionClientes("Clientes.csv")
+        self.gestion_tarjetas = GestionTarjetas("Tarjetas.csv",self.gestion_clientes)
         self.crear_interfaz_principal()
         
     def centrar_ventana(self):
@@ -652,6 +652,13 @@ class SistemaCompraModerno:
           print(f"DEBUG: Resultado de agregar_articulo: {resultado}")
         
           if resultado == True:
+              articulos_para_guardar=[]
+              actual = self.inventario.primero
+              while actual:
+                 art = actual.dato
+                 articulos_para_guardar.append(art)
+                 actual = actual.siguiente
+              file.guardar_articulos(articulos_para_guardar)
               messagebox.showinfo(
                   "Producto Agregado", 
                   f"Producto '{nombre}' agregado exitosamente!\n\n"
@@ -1130,7 +1137,7 @@ class SistemaCompraModerno:
                  f"Correo: {correo}\n\n"
                  f"Ahora puedes gestionar sus tarjetas desde la lista de clientes."
                  )
-            
+             file.guardar_clientes(self.gestion_clientes.clientes)
             # Cerrar modal
              self.modal_cliente.destroy()
             
@@ -2124,9 +2131,10 @@ class SistemaCompraModerno:
                      f"Banco: {banco}\n"
                      f"Cliente: {cliente.nombre} {cliente.apellido}"
                  )
-
+                 
                  modal.destroy()
                  self.cargar_tarjetas_cliente(cliente)  # Refrescar lista
+                 file.guardar_tarjetas(self.gestion_tarjetas.tarjetas)
              else:
                  messagebox.showerror("Error", "No se pudo agregar la tarjeta")
           else:
@@ -2195,7 +2203,8 @@ class SistemaCompraModerno:
                articulos_para_guardar.append(art)
                actual = actual.siguiente
 
-               
+            self.clientes = self.gestion_clientes.clientes
+            self.tarjetas = self.gestion_tarjetas.tarjetas
             file.guardar_datos(
                self.clientes,
                self.tarjetas,
