@@ -1946,6 +1946,10 @@ class SistemaCompraModerno:
         saldo_label = ctk.CTkLabel(modal, text=f"Saldo actual: ${tarjeta.saldo}")
         saldo_label.pack(pady=5)
     
+        limite_disponible = tarjeta.maximo_saldo - tarjeta.saldo
+        limite_label = ctk.CTkLabel(modal, text=f"Disponible para recargar: ${limite_disponible}")
+        limite_label.pack(pady=5)
+
     # Campo para ingresar monto
         ctk.CTkLabel(modal, text="Ingrese el monto a recargar:").pack(pady=(15,5))
     
@@ -1956,7 +1960,7 @@ class SistemaCompraModerno:
         btn_recargar = ctk.CTkButton(
             modal, 
             text="Recargar",
-            command=lambda: self.procesar_recarga(tarjeta, entry_monto, modal, saldo_label)
+            command=lambda: self.procesar_recarga(tarjeta, entry_monto, modal, saldo_label, limite_label),
         )
         btn_recargar.pack(pady=15)
 
@@ -1967,27 +1971,26 @@ class SistemaCompraModerno:
         )
         btn_cerrar.pack(pady=5)
 
-    def procesar_recarga(self, tarjeta, entry_monto, modal, saldo_label):
+    def procesar_recarga(self, tarjeta, entry_monto, modal, saldo_label, limite_label):
         try:
-            monto = float(entry_monto.get())
-            if monto <= 0 or monto > 3000:
-              raise ValueError("El monto debe ser positivo y no exceder $3000.")
+            monto = entry_monto.get().strip()
+            if not monto:
+               raise ValueError("El monto no puede estar vacío.")
+            
+            monto = float(monto)
 
-            tarjeta.saldo += monto
+            mensaje = self.gestion_tarjetas.recargar_tarjeta(tarjeta, monto)
 
-            for t in self.tarjetas:
-              if t.numero_tarjeta == tarjeta.numero_tarjeta:
-                  t.saldo = tarjeta.saldo
-                  break
-                  
-            self.guardar_nueva_tarjeta()
             saldo_label.configure(text=f"Saldo actual: ${tarjeta.saldo}")
+            limite_disponible = tarjeta.maximo_saldo - tarjeta.saldo
+            limite_label.configure(text=f"Límite disponible: ${limite_disponible}")
+            entry_monto.configure(placeholder_text="Máximo $3000")
+
             entry_monto.delete(0, 'end')
+            self.mostrar_exito(mensaje)
 
-            self.mostrar_exito(f"Recarga exitosa. Nuevo saldo: ${tarjeta.saldo}")
-
-        except ValueError:
-            self.mostrar_error("El monto debe ser positivo y no exceder $3000.")
+        except ValueError as e:
+            self.mostrar_error(str(e))
 
     def ver_detalles_de_tarjeta(self, tarjeta):
         modal = ctk.CTkToplevel()
