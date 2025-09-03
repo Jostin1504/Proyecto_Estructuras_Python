@@ -2,7 +2,7 @@ import csv
 import uuid #Sirve para crear un ID unico, podriamos usarlo como que cada cliente tenga uno, al igual que en la comprar y transacciones.
 from datetime import datetime,timedelta, timezone #timezone nos sirve por si en alguna ocasion llegan a realizar comprar internacionales.
 from Fechas import Tiempo
-from Tarjeta import TarjetaDeCompra
+from .Tarjeta import TarjetaDeCompra
 class Cliente:
     def __init__(self, nombre, apellido, telefono, correo, direccion_envio,id_cliente,fecha_registro,password):
         self.nombre = nombre
@@ -11,6 +11,7 @@ class Cliente:
         self.correo=correo
         self.direccion_envio=direccion_envio
         self.id_cliente=id_cliente
+        self.id_cliente=str(id_cliente)
         self.fecha_registro=fecha_registro
         self.password=password
         self.Historial_compras=[] #Puede ser para ver el carrito de compras
@@ -25,7 +26,7 @@ class Cliente:
         print(f"fecha_registro{self.fecha_registro}")
     def parametros(self):
         return{
-            "id_Cliente":self.id_cliente,
+            "id_cliente":self.id_cliente,
             "nombre":self.nombre,
             "Apellido":self.apellido,
             "correo":self.correo,
@@ -78,3 +79,33 @@ class Cliente:
 #en primera instancia con los clientes se usaria la cola
 #el primero que se hace siempre queda de primero en el proceso de pago
 
+    def to_dict(self):
+        return {
+            "nombre": self.nombre,
+            "apellido": self.apellido,
+            "telefono": self.telefono,
+            "correo": self.correo,
+            "direccion_envio": self.direccion_envio,
+            "id_cliente": self.id_cliente,
+            "fecha_registro": self.fecha_registro,
+            "password": self.password,
+            "Historial_compras": self.Historial_compras
+        }
+    
+    @staticmethod
+    def from_dict(data):
+        cliente = Cliente(
+            nombre=data["nombre"],
+            apellido=data["apellido"],
+            telefono=data["telefono"],
+            correo=data["correo"],
+            direccion_envio=data["direccion_envio"],
+            id_cliente=data["id_cliente"],
+            fecha_registro=data["fecha_registro"],
+            password=data["password"]
+        )
+        cliente.Historial_compras = data["Historial_compras"]
+        return cliente
+    
+    def __str__(self):
+        return f"Cliente: {self.nombre} {self.apellido}, ID: {self.id_cliente}, Correo: {self.correo}, Teléfono: {self.telefono}, Dirección de Envío: {self.direccion_envio}, Fecha de Registro: {self.fecha_registro}"

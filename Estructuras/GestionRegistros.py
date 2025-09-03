@@ -1,7 +1,7 @@
-from Clases_base.Registro import Registro
+from Clases_Base.Registro import Registro
 
 class Registros:
-    def _init_(self):
+    def __init__(self):
         self.lista_registros = []
 
     def agregar_registro(self, cliente, carrito, metodo_pago, estado):
@@ -28,3 +28,12 @@ class Registros:
             registro.estado = nuevo_estado
             return True
         return False
+
+    def cantidad_registros(self):
+        contador = 0
+        for i in self.lista_registros:
+            contador += 1
+        return contador
+
+    def __str__(self):
+        return f"Registros: {self.cantidad_registros()}"

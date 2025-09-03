@@ -13,7 +13,32 @@ class TarjetaDeCompra:
         print(f"Banco: {self.banco}")
         print(f"Saldo: {self.saldo}")
 
-
-
+    def to_dict(self):
+        return {
+            "numero_tarjeta": self.numero_tarjeta,
+            "codigo": self.codigo,
+            "banco": self.banco,
+            "id_usuario": self.id_usuario,
+            "saldo": self.saldo,
+            "recargas_realizadas": self.recargas_realizadas
+        }
+    
+    @staticmethod
+    def from_dict(data):
+        tarjeta = TarjetaDeCompra(
+            numero_tarjeta=data["numero_tarjeta"],
+            codigo=data["codigo"],
+            banco=data["banco"],
+            id_usuario=data["id_usuario"]
+        )
+        tarjeta.saldo = data["saldo"]
+        tarjeta.recargas_realizadas = data["recargas_realizadas"]
+        return tarjeta
+    
+    def __str__(self):
+        return (f"Tarjeta Número: {self.numero_tarjeta}\n"
+                f"Banco: {self.banco}\n"
+                f"Saldo: ${self.saldo}\n"
+                f"Recargas Realizadas: {self.recargas_realizadas}")
     
     

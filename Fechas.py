@@ -1,4 +1,3 @@
-
 from datetime import datetime, timedelta, timezone
 class Tiempo:
     def __init__(self,fecha=None):
@@ -22,3 +21,5 @@ class Tiempo:
     def Setformato(fecha_str, formato="%Y-%m-%d %H:%M:%S"):
         return Tiempo(datetime.strptime(fecha_str, formato))
         
+    def __str__(self):
+        return self.formato()
