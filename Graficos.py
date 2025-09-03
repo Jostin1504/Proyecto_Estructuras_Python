@@ -82,7 +82,6 @@ class SistemaCompraModerno:
             ("👤 Gestión Clientes", self.mostrar_gestion_clientes),
             ("📦 Inventario", self.mostrar_inventario),
             ("🛍️ Nueva Compra", self.mostrar_nueva_compra),
-            ("💳 Gestión Tarjetas", self.mostrar_gestion_tarjetas),
             ("📊 Reportes", self.mostrar_reportes),
             ("⚙️ Configuración", self.mostrar_configuracion)
         ]
@@ -861,27 +860,7 @@ class SistemaCompraModerno:
         self.carrito = None
         self.actualizar_carrito_vista()
         self.cargar_productos_en_interfaz()  # Actualiza inventario en la interfaz
-            
-    def mostrar_gestion_tarjetas(self):
-                """Mostrar gestión de tarjetas"""
-                self.limpiar_contenido()
-                
-                title_label = ctk.CTkLabel(
-                    self.content_frame,
-                    text="💳 Gestión de Tarjetas",
-                    font=ctk.CTkFont(size=24, weight="bold")
-                )
-                title_label.pack(pady=20)
-                
-                tarjetas_frame = ctk.CTkFrame(self.content_frame)
-                tarjetas_frame.pack(fill="both", expand=True, padx=20, pady=10)
-                
-                placeholder = ctk.CTkLabel(
-                    tarjetas_frame,
-                    text="Módulo de tarjetas en construcción...",
-                    font=ctk.CTkFont(size=16)
-                )
-                placeholder.pack(pady=100)
+       
         
     def mostrar_reportes(self):
             """Mostrar reportes del sistema"""
