@@ -97,5 +97,10 @@ class GestionTarjetas:
             self.guardar_tarjetas()
             return True, f"Recarga exitosa de {monto}. Recargas restantes para este monto: {recargas_restantes}"
 
-
+    def reiniciar_limites_recarga(self):
+       for tarjeta in self.tarjetas:
+          for monto in self.limite_recargas:
+             tarjeta.recargas_realizadas[monto] = 0
+       self.guardar_tarjetas
+       return True
         
