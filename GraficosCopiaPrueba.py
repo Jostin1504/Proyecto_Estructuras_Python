@@ -422,7 +422,7 @@ class SistemaCompraModerno:
        if criterio == "nombre":
         productos_ordenados = self.inventario.ordenarAlfabeticamente(lista_nodos)
        elif criterio == "precio":
-        productos_ordenados = self.inventario.ordenarPorPrecios(lista_nodos)
+        productos_ordenados = self.inventario.ordenar_simple_merge_sort(lista_nodos)
        elif criterio == "cantidad":
         productos_ordenados = self.inventario.ordenarPorCantidad(lista_nodos)
        elif criterio == "tipo":

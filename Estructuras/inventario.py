@@ -250,7 +250,7 @@ class ListaInventario:
         return False
         
     #recursividad y asintotico
-    def busqueda_recursiva(self, tipo, nodo=None):
+    def ordenar_recursivamente_por_tipo(self, tipo, nodo=None):
         if nodo is None:
             nodo = self.primero
         if nodo is None:
@@ -284,32 +284,6 @@ class ListaInventario:
             contador += len(actual.pila.items)
             actual = actual.siguiente
         return contador
-
-    def ordenar_por_precio_merge_sort(self):
-        def merge_sort(nodos):
-            if len(nodos) <= 1:
-                return nodos
-            mitad = len(nodos) // 2
-            izquierda = merge_sort(nodos[:mitad])
-            derecha = merge_sort(nodos[mitad:])
-            return merge(izquierda, derecha)
-
-        def merge(izquierda, derecha):
-            sorted_list = []
-            i = j = 0
-            while i < len(izquierda) and j < len(derecha):
-                if izquierda[i].dato.precio < derecha[j].dato.precio:
-                    sorted_list.append(izquierda[i])
-                    i += 1
-                else:
-                    sorted_list.append(derecha[j])
-                    j += 1
-            sorted_list.extend(izquierda[i:])
-            sorted_list.extend(derecha[j:])
-            return sorted_list
-
-        lista_nodos = self.pasar_a_lista_nodos(self)
-        return merge_sort(lista_nodos)
     
     def lista_a_arreglo(self):
         productos = []
@@ -324,3 +298,66 @@ class ListaInventario:
             print(nodo.dato)
             print(nodo.pila)
             print(" -----------\n")
+
+#----------------------------------------------------
+    #metodo de ordenamiento merge sort
+    def ordenar_simple_merge_sort(self, lista_nodos=None):
+        if lista_nodos is None:
+            datos = []
+            actual = self.primero
+            while actual:
+                datos.append(actual.dato)
+                actual = actual.siguiente
+        
+            datos_ordenados = self.merge_sort_datos(datos)
+            self.reconstruir_con_datos(datos_ordenados)
+            return  
+    
+    # Si recibe lista_nodos (para interfaz gráfica)
+        else:
+            datos = [nodo.dato for nodo in lista_nodos]
+            datos_ordenados = self.merge_sort_datos(datos)
+        
+        # Retornar nodos ordenados
+            nodos_ordenados = []
+            for dato_ordenado in datos_ordenados:
+                for nodo in lista_nodos:
+                    if nodo.dato is dato_ordenado:
+                        nodos_ordenados.append(nodo)
+                        break
+            return nodos_ordenados
+
+    def merge_sort_datos(self, datos):
+        #implementacion recursiva
+        #solo uno o ningun elemento
+        if len(datos) <= 1:
+           return datos
+
+        mitad = len(datos) // 2
+        izquierda = self.merge_sort_datos(datos[:mitad])
+        derecha = self.merge_sort_datos(datos[mitad:])
+    
+        return self.merge_datos(izquierda, derecha)
+
+    def merge_datos(self, izquierda, derecha):
+        resultado = []
+        i = j = 0
+    
+        while i < len(izquierda) and j < len(derecha):
+            if izquierda[i].precio <= derecha[j].precio:
+                resultado.append(izquierda[i])
+                i += 1
+            else:
+                resultado.append(derecha[j])
+                j += 1
+    
+        resultado.extend(izquierda[i:])
+        resultado.extend(derecha[j:])
+        return resultado
+
+    def reconstruir_con_datos(self, datos_ordenados):
+        self.primero = None
+        self.ultimo = None
+        for dato in datos_ordenados:
+            #se agrega cada articulo en orden
+            self.agregar_articulo(dato)

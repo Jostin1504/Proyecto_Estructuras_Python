@@ -56,14 +56,22 @@ for nodo in lista_ordenada_alfabeticamente:
     print(" -----------\n")
 
 
-print("probando la busqueda recursiba por tipo")
-articulo_tipo = lista.busqueda_recursiva("Muebles")
-print(articulo_tipo)
+# print("probando la busqueda recursiba por tipo")
+# articulo_tipo = lista.busqueda_recursiva("Muebles")
+# print(articulo_tipo)
 
-print("probando el merge sort por precios")
-lista_merge_sort = lista.merge_sort(lista_pila)
-for nodo in lista_merge_sort:
-    print(nodo.dato)
-    print(nodo.pila)
-    print(" -----------\n")
+print("=== PRUEBA COMPLETA MERGE SORT ===")
+
+# Mostrar antes
+print("ANTES del ordenamiento:")
+lista.mostrar_articulos()
+
+# Ordenar
+lista.ordenar_simple_merge_sort()
+
+print("DESPUÉS del ordenamiento:")
+# Mostrar después (con método recursivo específico)
+lista.mostrar_articulos()
+
+
 
