@@ -22,16 +22,16 @@ from Estructuras.GestionTarjetas import GestionTarjetas
 from Estructuras.GestionClientes import GestionClientes
 from Estructuras.GestionRegistros import Registros
 from Archivos.PersistenciaDatos import Archivo as file
-
+from tkinter import simpledialog
+from Clases_Base.Registro import Registro
 class SistemaCompraModerno:
     def __init__(self):
-        gestion_clientes, gestion_tarjetas, articulos, carritos, registros_lista = file.cargar_datos()
+        gestion_clientes, gestion_tarjetas, articulos, registros_lista = file.cargar_datos()
         self.clientes = gestion_clientes
         self.tarjetas = gestion_tarjetas
         self.articulos = articulos
-        self.carritos = carritos
         self.registros = Registros()
-        self.registros.lista_registros = registros_lista
+        self.registros = registros_lista
         ctk.set_appearance_mode("light")  
         ctk.set_default_color_theme("blue")  
         self.root = ctk.CTk()
@@ -58,6 +58,7 @@ class SistemaCompraModerno:
     def crear_interfaz_principal(self):
         """Crear la interfaz principal del sistema"""
         
+        
         self.main_container = ctk.CTkFrame(self.root)
         self.main_container.pack(fill="both", expand=True, padx=5, pady=10)
         
@@ -70,7 +71,6 @@ class SistemaCompraModerno:
         self.crear_area_contenido()
         
         self.mostrar_bienvenida()
-        
     def crear_sidebar(self):
         """Crear el menú lateral"""
         self.sidebar = ctk.CTkFrame(self.main_container, width=250, corner_radius=0)
@@ -422,7 +422,7 @@ class SistemaCompraModerno:
        if criterio == "nombre":
         productos_ordenados = self.inventario.ordenarAlfabeticamente(lista_nodos)
        elif criterio == "precio":
-        productos_ordenados = self.inventario.ordenar_simple_merge_sort(lista_nodos)
+        productos_ordenados = self.inventario.ordenarPorPrecios(lista_nodos)
        elif criterio == "cantidad":
         productos_ordenados = self.inventario.ordenarPorCantidad(lista_nodos)
        elif criterio == "tipo":
@@ -851,7 +851,6 @@ class SistemaCompraModerno:
         if not self.carrito or not self.carrito.items:
             messagebox.showinfo("Pago", "El carrito está vacío.")
             return
-        
         ProcesarPago(self.carrito).procesar_pago()
         # Eliminar productos del inventario
         for item in self.carrito.items:
@@ -888,6 +887,7 @@ class SistemaCompraModerno:
                )
                placeholder.pack(pady=100)
                return
+            
             for registro in self.registros.lista_registros:
                frame = ctk.CTkFrame(reportes_frame)
                frame.pack(fill="x",padx=10,pady=5)
@@ -1921,15 +1921,6 @@ class SistemaCompraModerno:
       )
       btn_recargar.pack(pady=5)
 
-       #boton ver tarjeta
-      btn_ver_tarjeta = ctk.CTkButton(
-          buttons_frame,
-          text="Ver Tarjeta",
-          command=lambda: self.ver_detalles_de_tarjeta(tarjeta),
-          fg_color=("orange")
-        )
-      btn_ver_tarjeta.pack(pady=15)
-
     # Botón eliminar tarjeta
       btn_eliminar = ctk.CTkButton(
         buttons_frame,
@@ -2099,42 +2090,6 @@ class SistemaCompraModerno:
             )
       btn_guardar.pack(side="right", padx=20, pady=15)
 
-    def ver_detalles_de_tarjeta(self, tarjeta):
-        modal = ctk.CTkToplevel()
-        modal.title("Detalles de Tarjeta")
-        modal.geometry("300x200")
-        modal.resizable(False, False)
-
-        modal.grab_set()
-        modal.focus_force()
-        modal.lift()
-        modal.attributes("-topmost", True)
-        modal.after(100, lambda: modal.attributes("-topmost", False))
-
-    # Título
-        ctk.CTkLabel(
-            modal, 
-            text="Detalles de la Tarjeta", 
-            font=ctk.CTkFont(size=16, weight="bold")
-        ).pack(pady=15)
-
-    # Banco
-        ctk.CTkLabel(modal, text=f"Banco: {tarjeta.banco}").pack(pady=5)
-
-    # 🔥 Label del saldo (lo guardamos en una variable)
-        saldo_label = ctk.CTkLabel(modal, text=f"Saldo: ${tarjeta.saldo}")
-        saldo_label.pack(pady=5)
-
-    # Botón actualizar saldo (opcional)
-        ctk.CTkButton(
-            modal, 
-            text="Actualizar Saldo", 
-            command=lambda: saldo_label.configure(text=f"Saldo: ${tarjeta.saldo}")
-        ).pack(pady=10)
-
-    # Botón cerrar
-        ctk.CTkButton(modal, text="Cerrar", command=modal.destroy).pack(pady=10)
-
     def guardar_nueva_tarjeta(self, modal, cliente, numero, cvv, banco):
       """Guardar nueva tarjeta para el cliente"""
    
@@ -2242,7 +2197,98 @@ class SistemaCompraModerno:
 
           except Exception as e:
              messagebox.showerror("Error", f"Error al eliminar tarjeta: {str(e)}")
+    def procesar_pago(self):
+          """Procesar el pago del carrito actual"""
 
+          # Obtener cliente seleccionado del dropdown
+          cliente_seleccionado_texto = self.cliente_compra_var.get()
+          print(f"DEBUG - Texto seleccionado: {cliente_seleccionado_texto}")
+
+          # Buscar el objeto cliente completo
+          self.usuario_actual = next(
+            (c for c in self.gestion_clientes.clientes
+            if f"{c.nombre} {c.apellido} ({c.id_cliente})" == cliente_seleccionado_texto),
+            None
+          )
+
+                
+          print(f"DEBUG - Usuario encontrado: {self.usuario_actual}")
+
+          # Verificar que hay un cliente seleccionado
+          if not self.usuario_actual:
+              messagebox.showerror("Error", "Debe seleccionar un cliente válido")
+              return
+
+          # Verificar que el carrito no está vacío
+          if not self.carrito or not self.carrito.items:
+              messagebox.showinfo("Pago", "El carrito está vacío.")
+              return
+
+          # Pedir datos al usuario
+          numero = simpledialog.askstring("Pago", "Ingrese número de tarjeta:")
+          if not numero:
+              return
+
+          cvv = simpledialog.askstring("Pago", "Ingrese CVV:")
+          if not cvv:
+              return
+
+          password = simpledialog.askstring("Pago", "Ingrese su contraseña:")
+          if not password:
+              return
+
+          if self.usuario_actual.password != password:
+            return "Contraseña incorrecta. Pago cancelado."
+          
+          try:
+              # Crear procesador de pago
+              procesador = ProcesarPago(self.carrito, self.gestion_tarjetas, self.registros)
+
+              # Procesar pago
+              resultado = procesador.procesar_pago(
+                  self.usuario_actual,  # cliente obtenido del dropdown
+                  numero,
+                  cvv,
+                  password
+              )
+
+              print(f"DEBUG - Resultado del pago: {resultado}")
+
+              # Si el pago fue exitoso (verificar si contiene símbolo de éxito)
+              if "✅" in resultado or "exitoso" in resultado.lower():
+                  # Eliminar productos del inventario solo si el pago fue exitoso
+                  for item in self.carrito.items:
+                      nodo = next(
+                          (n for n in self.inventario.pasar_a_lista_nodos(self.inventario)
+                           if n.dato.nombre == item["nombre"]),
+                          None
+                      )
+                      if nodo:
+                          for _ in range(item["cantidad"]):
+                              if nodo.pila.items:
+                                  nodo.pila.items.pop()
+                  registro = Registro(
+                     cliente = self.usuario_actual,
+                     total = self.carrito.calcular_total(),
+                     metodoDePago="Tarjeta",
+                     estado = "Exitoso"
+                  )
+                  self.registros.lista_registros.append(registro)
+                  file.guardar_registros(self.registros)
+                  # Resetear carrito
+                  self.carrito = None
+                  self.actualizar_carrito_vista()
+                  self.cargar_productos_en_interfaz()
+
+              # Mostrar resultado del pago
+              if "❌" in resultado or "error" in resultado.lower():
+                  messagebox.showerror("Error de pago", resultado)
+              else:
+                  messagebox.showinfo("Pago", resultado)
+
+          except Exception as e:
+              print(f"DEBUG - Excepción: {str(e)}")
+              messagebox.showerror("Error de pago", f"Error inesperado: {str(e)}")
       
 
     def salir_aplicacion(self):
@@ -2264,24 +2310,24 @@ class SistemaCompraModerno:
                self.clientes,
                self.tarjetas,
                articulos_para_guardar,
-               self.carritos,
-               self.registros
+               self.registros.lista_registros,
             )
 
             self.root.quit()
             self.root.destroy()
         
     def ejecutar(self):
-        """Ejecutar la aplicación"""
-        (self.clientes,
-         self.tarjetas,
-         self.articulos,
-         self.carritos,
-         self.registros) = file.cargar_datos()
-        inventario = ListaInventario()
-        for articulo in self.articulos:
-           inventario.agregar_articulo(articulo)        
-        self.root.mainloop()
+      """Ejecutar la aplicación"""
+      (self.clientes,
+      self.tarjetas,
+      self.articulos,
+      self.registros) = file.cargar_datos()
+
+      inventario = ListaInventario()
+      for articulo in self.articulos:
+          inventario.agregar_articulo(articulo)
+
+      self.root.mainloop()
 
 def main():
   """Función principal"""
