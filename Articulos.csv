@@ -2,3 +2,5 @@ nombre,tipo,precio,cantidad
 PC,Electrónica,1200.0,5
 Sillas,Muebles,20.0,50
 Mancuernas,Deportes,42.0,30
+balon,Deportes,120.0,5
+HotWeels,Otros,200.0,20

@@ -22,6 +22,7 @@ from Estructuras.GestionTarjetas import GestionTarjetas
 from Estructuras.GestionClientes import GestionClientes
 from Estructuras.GestionRegistros import Registros
 from Archivos.PersistenciaDatos import Archivo as file
+
 class SistemaCompraModerno:
     def __init__(self):
         gestion_clientes, gestion_tarjetas, articulos, carritos, registros_lista = file.cargar_datos()
@@ -57,7 +58,6 @@ class SistemaCompraModerno:
     def crear_interfaz_principal(self):
         """Crear la interfaz principal del sistema"""
         
-        
         self.main_container = ctk.CTkFrame(self.root)
         self.main_container.pack(fill="both", expand=True, padx=5, pady=10)
         
@@ -70,6 +70,7 @@ class SistemaCompraModerno:
         self.crear_area_contenido()
         
         self.mostrar_bienvenida()
+        
     def crear_sidebar(self):
         """Crear el menú lateral"""
         self.sidebar = ctk.CTkFrame(self.main_container, width=250, corner_radius=0)
@@ -850,6 +851,7 @@ class SistemaCompraModerno:
         if not self.carrito or not self.carrito.items:
             messagebox.showinfo("Pago", "El carrito está vacío.")
             return
+        
         ProcesarPago(self.carrito).procesar_pago()
         # Eliminar productos del inventario
         for item in self.carrito.items:

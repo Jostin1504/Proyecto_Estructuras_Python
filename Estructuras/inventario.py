@@ -249,4 +249,78 @@ class ListaInventario:
             actual = actual.siguiente
         return False
         
+    #recursividad y asintotico
+    def busqueda_recursiva(self, tipo, nodo=None):
+        if nodo is None:
+            nodo = self.primero
+        if nodo is None:
+            return None
+        if nodo.dato.tipo.lower() == tipo.lower():
+            return nodo.pila
+        return self.busqueda_recursiva(tipo, nodo.siguiente)
     
+    def mostrar_articulos_recursivo(self, nodo=None):
+        if nodo is None:
+            nodo = self.primero
+        if nodo is None:
+            return
+        print("Mostrando artículos recursivamente por tipo:")
+        print(nodo.dato)        
+        print(nodo.pila)        
+        print(" -----------\n")
+        self.mostrar_articulos_recursivo(nodo.siguiente)
+
+    #tiempo constante
+    def primer_articulo(self):
+        if self.primero:
+            return self.primero.dato
+        return None
+    
+    #tiempo lineal
+    def contar_articulos(self):
+        contador = 0
+        actual = self.primero
+        while actual:
+            contador += len(actual.pila.items)
+            actual = actual.siguiente
+        return contador
+
+    def ordenar_por_precio_merge_sort(self):
+        def merge_sort(nodos):
+            if len(nodos) <= 1:
+                return nodos
+            mitad = len(nodos) // 2
+            izquierda = merge_sort(nodos[:mitad])
+            derecha = merge_sort(nodos[mitad:])
+            return merge(izquierda, derecha)
+
+        def merge(izquierda, derecha):
+            sorted_list = []
+            i = j = 0
+            while i < len(izquierda) and j < len(derecha):
+                if izquierda[i].dato.precio < derecha[j].dato.precio:
+                    sorted_list.append(izquierda[i])
+                    i += 1
+                else:
+                    sorted_list.append(derecha[j])
+                    j += 1
+            sorted_list.extend(izquierda[i:])
+            sorted_list.extend(derecha[j:])
+            return sorted_list
+
+        lista_nodos = self.pasar_a_lista_nodos(self)
+        return merge_sort(lista_nodos)
+    
+    def lista_a_arreglo(self):
+        productos = []
+        actual = self.primero
+        while actual:
+            productos.append(actual)
+            actual = actual.siguiente
+        return productos
+    
+    def mostar_articulos_arreglo(self, arreglo):
+        for nodo in arreglo:
+            print(nodo.dato)
+            print(nodo.pila)
+            print(" -----------\n")
