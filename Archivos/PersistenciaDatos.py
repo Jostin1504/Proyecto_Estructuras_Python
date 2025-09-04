@@ -10,7 +10,6 @@ class Archivo:
     Tarjetas_csv = 'Tarjetas.csv'
     Articulos_csv = 'Articulos.csv'
     Registros_csv = 'Registros.csv'
-    Carrodecompra_csv = 'Carrodecompra.csv'
 
     @staticmethod
     def guardar_lista(objetos, path: str):
@@ -53,47 +52,36 @@ class Archivo:
     def cargar_articulos():
         return Archivo.cargar_lista(Articulo, Archivo.Articulos_csv)
     
-    def guardar_carritos(carritos):
-        fieldnames = ["id_carrito", "id_cliente", "id_producto","nombre","cantidad","precio_unitario","subtotal"]
-        with open(Archivo.Carrodecompra_csv, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for carrito in carritos:
-                for item in carrito.Parametros_csv():
-                    writer.writerow({
-                        "id_carrito": carrito.id_carrito,
-                        "id_cliente": carrito.cliente.id_cliente,
-                        **item
-                    })
-
-    def cargar_carritos():
-        carritos_dict = {}
-        clientes = Archivo.cargar_clientes()
+    def cargar_registros():
+        registros = []
         try:
-            with open(Archivo.Carrodecompra_csv, newline='', encoding='utf-8') as csvfile:
+            clientes = Archivo.cargar_clientes()
+            with open(Archivo.Registros_csv, 'r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
+                if not reader.fieldnames or "id_cliente" not in reader.fieldnames or "id_registro" not in reader.fieldnames:
+                    return []
                 for row in reader:
-                    carrito_id = row["id_carrito"]
-                    cliente_id = row["id_cliente"]
-                    cliente = next((c for c in clientes if c.id_cliente == cliente_id), None)
-                    if not cliente:
+                    if not row.get("id_registro") or not row.get("id_cliente"):
                         continue
-                    if carrito_id not in carritos_dict:
-                        carrito = Carrodecompra(cliente)
-                        carrito.id_carrito = carrito_id
-                        carritos_dict[carrito_id] = carrito
-                    else:
-                        carrito = carritos_dict[carrito_id]
-                    
-                    carrito.agregar_item(
-                        id_producto=row["id_producto"],
-                        nombre=row["nombre"],
-                        cantidad=int(row["cantidad"]),
-                        precio_unitario=float(row["precio_unitario"])
-                    )
+                    try:
+                        cliente = next((c for c in clientes if str(c.id_cliente) == str(row["id_cliente"])), None)
+                        if not cliente:
+                            print(f"Cliente con ID {row['id_cliente']} no encontrado para registro {row['id_registro']}")
+                            continue
+                        registro = Registro(
+                            cliente=cliente,
+                            total=float(row.get("total", 0.0)),
+                            metodoDePago=row.get("metodo_de_pago", ""),
+                            estado=row.get("estado", "pendiente")
+                        )
+                        registro.id_registro = row["id_registro"]
+                        registro.fecha = row.get("fecha")  
+                        registros.append(registro)
+                    except Exception as e:
+                        print(f"Advertencia al cargar registro {row.get('id_registro')}: {e}")
         except FileNotFoundError:
             pass
-        return list(carritos_dict.values())
+        return registros
     
     def guardar_registros(registros):
         if isinstance(registros, Registros):
@@ -105,30 +93,32 @@ class Archivo:
         registros = []
         try:
             clientes = Archivo.cargar_clientes()
-            carritos = Archivo.cargar_carritos()
             with open(Archivo.Registros_csv, 'r', newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 for row in reader:
-                    registros.append(Registro.from_dict(row, clientes, carritos))
+                    if not row.get("id_registro") or not row.get("id_cliente"):
+                        continue
+                    try:
+                        registros.append(Registro.from_dict(row, clientes))
+                    except ValueError as e:
+                        print(f"Advertencia al cargar registro {row.get('id_registro')}: {e}")
         except FileNotFoundError:
             pass
         return registros
     
     
-    def guardar_datos(clientes, tarjetas, articulos, carritos, registros):
+    def guardar_datos(clientes, tarjetas, articulos, registros):
         Archivo.guardar_clientes(clientes)
         Archivo.guardar_tarjetas(tarjetas)
         Archivo.guardar_articulos(articulos)
-        Archivo.guardar_carritos(carritos)
         Archivo.guardar_registros(registros)
 
     def cargar_datos():
         clientes = Archivo.cargar_clientes()
         tarjetas = Archivo.cargar_tarjetas()
         articulos = Archivo.cargar_articulos()
-        carritos = Archivo.cargar_carritos()
-        registros_lista=Archivo.cargar_registros()
+        registros_lista = Archivo.cargar_registros()
         registros = Registros()
         registros.lista_registros = registros_lista
-        return clientes, tarjetas, articulos, carritos, registros
+        return clientes, tarjetas, articulos, registros
 
