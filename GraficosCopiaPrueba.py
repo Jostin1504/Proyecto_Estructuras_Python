@@ -1921,6 +1921,14 @@ class SistemaCompraModerno:
       )
       btn_recargar.pack(pady=5)
 
+      btn_ver_tarjeta = ctk.CTkButton(
+          buttons_frame,
+          text="Ver Tarjeta",
+          command=lambda: self.ver_detalles_de_tarjeta(tarjeta),
+          fg_color=("orange")
+        )
+      btn_ver_tarjeta.pack(pady=15)
+
     # Botón eliminar tarjeta
       btn_eliminar = ctk.CTkButton(
         buttons_frame,
@@ -2089,6 +2097,42 @@ class SistemaCompraModerno:
           font=ctk.CTkFont(size=14, weight="bold")
             )
       btn_guardar.pack(side="right", padx=20, pady=15)
+
+    def ver_detalles_de_tarjeta(self, tarjeta):
+        modal = ctk.CTkToplevel()
+        modal.title("Detalles de Tarjeta")
+        modal.geometry("300x200")
+        modal.resizable(False, False)
+
+        modal.grab_set()
+        modal.focus_force()
+        modal.lift()
+        modal.attributes("-topmost", True)
+        modal.after(100, lambda: modal.attributes("-topmost", False))
+
+    # Título
+        ctk.CTkLabel(
+            modal, 
+            text="Detalles de la Tarjeta", 
+            font=ctk.CTkFont(size=16, weight="bold")
+        ).pack(pady=15)
+
+    # Banco
+        ctk.CTkLabel(modal, text=f"Banco: {tarjeta.banco}").pack(pady=5)
+
+    # 🔥 Label del saldo (lo guardamos en una variable)
+        saldo_label = ctk.CTkLabel(modal, text=f"Saldo: ${tarjeta.saldo}")
+        saldo_label.pack(pady=5)
+
+    # Botón actualizar saldo (opcional)
+        ctk.CTkButton(
+            modal, 
+            text="Actualizar Saldo", 
+            command=lambda: saldo_label.configure(text=f"Saldo: ${tarjeta.saldo}")
+        ).pack(pady=10)
+
+    # Botón cerrar
+        ctk.CTkButton(modal, text="Cerrar", command=modal.destroy).pack(pady=10)
 
     def guardar_nueva_tarjeta(self, modal, cliente, numero, cvv, banco):
       """Guardar nueva tarjeta para el cliente"""
